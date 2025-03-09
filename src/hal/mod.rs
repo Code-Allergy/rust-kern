@@ -1,4 +1,8 @@
+pub mod dram;
+
 pub mod uart;
+
+#[macro_use]
 pub mod util;
 
 pub use uart::Writer;

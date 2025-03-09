@@ -1,34 +1,31 @@
 #![no_std]
 #![no_main]
-#![feature(asm)]
-
-use core::fmt::{self, Write};
 
 mod hal;
 mod panic;
-use crate::hal::uart;
+use crate::hal::{dram, uart};
 
-#[macro_export]
-macro_rules! print {
-    ($($arg:tt)*) => {
-        $crate::hal::Writer.write_fmt(format_args!($($arg)*)).unwrap()
-    };
+fn get_boot_entry() -> usize {
+    unsafe extern "C" {
+        static __init: u8;
+    }
+    let init_addr = unsafe { &__init as *const u8 as usize };
+    init_addr
 }
-
-#[macro_export]
-macro_rules! println {
-    () => ($crate::print!("\n"));
-    ($($arg:tt)*) => {
-        $crate::print!("{}\n", format_args!($($arg)*))
-    };
+#[derive(Debug)]
+struct BootInfo {
+    pub boot_entry: usize,
+    pub boot_size: usize,
 }
 
 #[unsafe(no_mangle)]
 pub extern "C" fn rust_main() -> ! {
-    unsafe {
-        uart::init();
-        println!("Hello, world!");
-        println!("Answer of life: {}", 42);
-    } // unsafe
+    uart::init();
+    println!("Uart initialized!");
+    println!("Bootloader loaded at 0x{:x}", get_boot_entry());
+
+    dram::init();
+    println!("DRAM initialized!");
+    println!("Time to hang!\n");
     loop {}
 }

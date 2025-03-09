@@ -1,15 +1,7 @@
+use crate::hal::bbb::cm::*;
 use crate::hal::util::{reg32_read, reg32_read_masked, reg32_write, reg32_write_masked};
+
 use core::ptr;
-const CONTROL_MODULE_BASE: u32 = 0x44E10000;
-const CONTROL_MODULE_CONF_UART0_RXD: u32 = 0x970;
-const CONTROL_MODULE_CONF_UART0_TXD: u32 = 0x974;
-
-const CM_PER_BASE: u32 = 0x44E00000;
-const CM_PER_GPIO1_CLKCTRL: u32 = 0xAC;
-
-const CM_WKUP_BASE: u32 = 0x44E00400;
-const CM_WKUP_UART0_CLKCTRL: u32 = 0xB4;
-const CM_WKUP_L4WKUP_CLKCTRL: u32 = 0x0C;
 
 const GPIO1_BASE: u32 = 0x4804c000;
 const GPIO_CTRL_OFF: u32 = 0x130;

@@ -1,4 +1,4 @@
-use crate::hal::util::{reg32_read, reg32_write};
+use crate::hal::util::reg32_write;
 const UART0_BASE: u32 = 0x01C28000;
 const RBR_THR_DLL: u32 = 0x00;
 const IER_DLH: u32 = 0x04;
