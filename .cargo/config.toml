@@ -1,0 +1,15 @@
+[build]
+target = "armv7a-none-eabi"
+
+[target.armv7a-none-eabi]
+linker = "arm-none-eabi-gcc"
+rustflags = [
+    "-C",
+    "target-feature=+v7,+thumb2",
+    "-C",
+    "link-arg=-Tlinker.ld",
+    "-C",
+    "link-arg=-nostartfiles",
+    "-C",
+    "link-arg=-nostdlib",
+]
