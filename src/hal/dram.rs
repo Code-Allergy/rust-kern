@@ -16,7 +16,7 @@ mod platform {
     use crate::{
         dbg,
         hal::bbb::{
-            cm::{get_device_version, init_core_pll, init_mpu_pll, init_plls},
+            cm::{get_device_version, init_core_pll, init_mpu_pll, init_per_pll, init_plls},
             tps::*,
         },
         println,
@@ -28,6 +28,7 @@ mod platform {
         set_vdd10p_voltage(OPP_TABLE[opp_max_idx as usize].volt_sel);
         init_mpu_pll(OPP_TABLE[opp_max_idx as usize].mpupll_m);
         init_core_pll();
+        init_per_pll();
         println!("Done MPUPLL");
         // init_plls();
 
