@@ -31,7 +31,7 @@ pub extern "C" fn rust_main() -> ! {
     dram::init();
 
     let board = hal::board::get_board_info();
-    dbg!(board);
+    println!("Board Info: {}", board);
 
     println!("DRAM initialized!");
     // test if the dram works by writing to 0x80000000, then reading it back

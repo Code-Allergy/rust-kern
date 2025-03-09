@@ -18,6 +18,36 @@ pub struct BoardInfo {
     version: [u8; EEPROM_BOARD_VERSION_LEN as usize],
 }
 
+impl BoardInfo {
+    pub fn header_str(&self) -> &str {
+        core::str::from_utf8(&self.header).unwrap()
+    }
+
+    pub fn name_str(&self) -> &str {
+        core::str::from_utf8(&self.name).unwrap()
+    }
+
+    pub fn serial_str(&self) -> &str {
+        core::str::from_utf8(&self.serial).unwrap()
+    }
+
+    pub fn version_str(&self) -> &str {
+        core::str::from_utf8(&self.version).unwrap()
+    }
+}
+
+impl core::fmt::Display for BoardInfo {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(
+            f,
+            "BoardInfo {{ name: {}, serial: {}, version: {} }}",
+            self.name_str(),
+            self.serial_str(),
+            self.version_str()
+        )
+    }
+}
+
 pub fn get_board_info() -> BoardInfo {
     platform::get_board_info()
 }

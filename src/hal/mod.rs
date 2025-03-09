@@ -5,9 +5,10 @@ pub mod i2c;
 pub mod uart;
 
 pub use uart::Writer;
+pub mod util;
 
 #[macro_use]
-pub mod util;
+pub mod macros;
 
 #[cfg(feature = "bbb")]
 pub mod bbb;

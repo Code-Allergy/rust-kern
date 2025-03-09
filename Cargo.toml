@@ -13,6 +13,6 @@ panic = "abort"
 panic = "abort"
 
 [features]
-default = ["bbb"]
+# default = ["bbb"]
 qemu = []
 bbb = []
