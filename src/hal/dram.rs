@@ -16,7 +16,10 @@ mod platform {
     use crate::{
         dbg,
         hal::bbb::{
-            cm::{get_device_version, init_core_pll, init_mpu_pll, init_per_pll, init_plls},
+            cm::{
+                get_device_version, init_core_pll, init_ddr_pll, init_mpu_pll, init_per_pll,
+                init_plls,
+            },
             tps::*,
         },
         println,
@@ -29,6 +32,7 @@ mod platform {
         init_mpu_pll(OPP_TABLE[opp_max_idx as usize].mpupll_m);
         init_core_pll();
         init_per_pll();
+        init_ddr_pll();
         println!("Done MPUPLL");
         // init_plls();
 
