@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 
+use super::tps::get_opp_config;
 use crate::hal::util::*;
+// TODO: split out defs
 
 pub const CM_PER_BASE: u32 = 0x44E00000;
 pub const CM_WKUP_BASE: u32 = 0x44E00400;
@@ -787,14 +789,12 @@ pub fn init_mpu_pll(pll_mult: u32) {
 
 pub fn init_core_pll() {
     unsafe {
-        let mut reg_val = reg32_read_masked(
+        reg32_write_masked(
             CM_WKUP_BASE,
             CM_WKUP_CM_CLKMODE_DPLL_CORE,
-            !CM_WKUP_CM_CLKMODE_DPLL_CORE_DPLL_EN,
+            CM_WKUP_CM_CLKMODE_DPLL_CORE_DPLL_EN,
+            CM_WKUP_CM_CLKMODE_DPLL_CORE_DPLL_EN_DPLL_MN_BYP_MODE,
         );
-
-        reg_val |= CM_WKUP_CM_CLKMODE_DPLL_CORE_DPLL_EN_DPLL_MN_BYP_MODE;
-        reg32_write(CM_WKUP_BASE, CM_WKUP_CM_CLKMODE_DPLL_CORE, reg_val);
 
         while reg32_read_masked(
             CM_WKUP_BASE,
@@ -812,7 +812,7 @@ pub fn init_core_pll() {
         );
 
         /* M4 divider */
-        reg_val = reg32_read_masked(
+        let mut reg_val = reg32_read_masked(
             CM_WKUP_BASE,
             CM_WKUP_CM_DIV_M4_DPLL_CORE,
             !CM_WKUP_CM_DIV_M4_DPLL_CORE_HSDIVIDER_CLKOUT1_DIV,
@@ -1086,4 +1086,12 @@ pub fn init_power_domain_transition() {
     }
 }
 
-pub fn init_plls() {}
+pub fn init_plls() {
+    let opp_config = get_opp_config();
+    init_mpu_pll(opp_config.mpupll_m);
+    init_core_pll();
+    init_per_pll();
+    init_ddr_pll();
+    init_interface_clk();
+    init_power_domain_transition();
+}

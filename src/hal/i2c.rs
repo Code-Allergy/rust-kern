@@ -10,6 +10,7 @@ pub fn mux_pins(channel: u32) {
 #[cfg(feature = "qemu")]
 mod platform {
     pub fn init() {}
+    pub fn mux_pins(_channel: u32) {}
 }
 
 #[cfg(feature = "bbb")]

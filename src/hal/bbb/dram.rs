@@ -1,7 +1,10 @@
 #![allow(dead_code)]
 use crate::hal::util::*;
 
-use super::cm::*;
+use super::{
+    cm::*,
+    tps::{DEVICE_VERSION_2_0, DEVICE_VERSION_2_1},
+};
 
 pub const DDR_PHY_CTRL_BASE: u32 = CONTROL_MODULE_BASE + 0x2000;
 
@@ -34,6 +37,19 @@ pub const CONTROL_VTP_CTRL_RSVD2_SHIFT: u32 = 0x0000000F;
 
 pub const CONTROL_VTP_CTRL_RSVD3: u32 = 0xFF800000;
 pub const CONTROL_VTP_CTRL_RSVD3_SHIFT: u32 = 0x00000017;
+
+pub const CONTROL_DDR_CKE_CTRL: u32 = 0x131c;
+pub const SOC_EMIF_0_REGS: u32 = 0x4C000000;
+pub const EMIF_DDR_PHY_CTRL_1: u32 = 0xE4;
+pub const EMIF_DDR_PHY_CTRL_1_SHDW: u32 = 0xE8;
+pub const EMIF_DDR_PHY_CTRL_2: u32 = 0xEC;
+
+/* DDR_CKE_CTRL */
+pub const CONTROL_DDR_CKE_CTRL_DDR_CKE_CTRL: u32 = 0x00000001;
+pub const CONTROL_DDR_CKE_CTRL_DDR_CKE_CTRL_SHIFT: u32 = 0x00000000;
+
+pub const CONTROL_DDR_CKE_CTRL_SMA1: u32 = 0xFFFFFFFE;
+pub const CONTROL_DDR_CKE_CTRL_SMA1_SHIFT: u32 = 0x00000001;
 
 pub const CMD0_SLAVE_RATIO_0: u32 = 0x1C;
 pub const CMD0_SLAVE_FORCE_0: u32 = 0x20;
@@ -126,6 +142,41 @@ pub const CONTROL_DDR_IO_CTRL_RSVD2: u32 = 0x20000000;
 pub const CONTROL_DDR_IO_CTRL_RSVD2_SHIFT: u32 = 0x0000001D;
 
 pub const CONTROL_DDR_IO_CTRL: u32 = 0xe04;
+
+// emif final setup
+pub const DDR3_EMIF_DDR_PHY_CTRL_1: u32 = 0x06;
+pub const DDR3_EMIF_DDR_PHY_CTRL_1_DY_PWRDN: u32 = 0x00100000;
+pub const DDR3_EMIF_DDR_PHY_CTRL_1_SHDW: u32 = 0x06;
+pub const DDR3_EMIF_DDR_PHY_CTRL_1_SHDW_DY_PWRDN: u32 = 0x00100000;
+pub const DDR3_EMIF_DDR_PHY_CTRL_2: u32 = 0x06;
+
+pub const DDR3_EMIF_SDRAM_TIM_1: u32 = 0x0AAAD4DB;
+pub const DDR3_EMIF_SDRAM_TIM_1_SHDW: u32 = 0x0AAAD4DB;
+
+pub const DDR3_EMIF_SDRAM_TIM_2: u32 = 0x266B7FDA;
+pub const DDR3_EMIF_SDRAM_TIM_2_SHDW: u32 = 0x266B7FDA;
+
+pub const DDR3_EMIF_SDRAM_TIM_3: u32 = 0x501F867F;
+pub const DDR3_EMIF_SDRAM_TIM_3_SHDM: u32 = 0x501F867F;
+
+pub const DDR3_EMIF_SDRAM_REF_CTRL_VAL1: u32 = 0x00000C30;
+pub const DDR3_EMIF_SDRAM_REF_CTRL_SHDW_VAL1: u32 = 0x00000C30;
+
+pub const DDR3_EMIF_ZQ_CONFIG_VAL: u32 = 0x50074BE4;
+pub const DDR3_EMIF_SDRAM_CONFIG: u32 = 0x61C04BB2;
+
+pub const EMIF_SDRAM_TIM_1: u32 = 0x18;
+pub const EMIF_SDRAM_TIM_1_SHDW: u32 = 0x1C;
+pub const EMIF_SDRAM_TIM_2: u32 = 0x20;
+pub const EMIF_SDRAM_TIM_2_SHDW: u32 = 0x24;
+pub const EMIF_SDRAM_TIM_3: u32 = 0x28;
+pub const EMIF_SDRAM_TIM_3_SHDW: u32 = 0x2C;
+pub const EMIF_SDRAM_REF_CTRL: u32 = 0x10;
+pub const EMIF_SDRAM_REF_CTRL_SHDW: u32 = 0x14;
+pub const EMIF_ZQ_CONFIG: u32 = 0xC8;
+pub const EMIF_SDRAM_CONFIG: u32 = 0x8;
+pub const CONTROL_SECURE_EMIF_SDRAM_CONFIG: u32 = 0x110;
+pub const CONTROL_SECURE_EMIF_SDRAM_CONFIG_2: u32 = 0x114;
 
 pub fn init_emif() {
     unsafe {
@@ -254,6 +305,129 @@ pub fn init_ddr_phys() {
 
 pub fn init_ddr_final() {
     unsafe {
-        // reg32_write(CONTROL_MODULE_BASE, )
+        let version = get_device_version();
+        // IOCTL
+        reg32_write(
+            CONTROL_MODULE_BASE,
+            CONTROL_DDR_CMD_IOCTRL_0,
+            DDR3_CONTROL_DDR_CMD_IOCTRL_0,
+        );
+        reg32_write(
+            CONTROL_MODULE_BASE,
+            CONTROL_DDR_CMD_IOCTRL_1,
+            DDR3_CONTROL_DDR_CMD_IOCTRL_1,
+        );
+        reg32_write(
+            CONTROL_MODULE_BASE,
+            CONTROL_DDR_CMD_IOCTRL_2,
+            DDR3_CONTROL_DDR_CMD_IOCTRL_2,
+        );
+
+        reg32_write(
+            CONTROL_MODULE_BASE,
+            CONTROL_DDR_DATA_IOCTRL_0,
+            DDR3_CONTROL_DDR_DATA_IOCTRL_0,
+        );
+        reg32_write(
+            CONTROL_MODULE_BASE,
+            CONTROL_DDR_DATA_IOCTRL_1,
+            DDR3_CONTROL_DDR_DATA_IOCTRL_1,
+        );
+
+        /* IO to work for DDR3 */
+        let reg = reg32_read(CONTROL_MODULE_BASE, CONTROL_DDR_IO_CTRL);
+        reg32_write(
+            CONTROL_MODULE_BASE,
+            CONTROL_DDR_IO_CTRL,
+            reg & DDR3_CONTROL_DDR_IO_CTRL,
+        );
+
+        reg32_write_masked(
+            CONTROL_MODULE_BASE,
+            CONTROL_DDR_CKE_CTRL,
+            CONTROL_DDR_CKE_CTRL_DDR_CKE_CTRL,
+            CONTROL_DDR_CKE_CTRL_DDR_CKE_CTRL,
+        );
+        reg32_write(
+            SOC_EMIF_0_REGS,
+            EMIF_DDR_PHY_CTRL_1,
+            DDR3_EMIF_DDR_PHY_CTRL_1,
+        );
+
+        /* dynamic power down */
+        if (DEVICE_VERSION_2_1 == version) || (DEVICE_VERSION_2_0 == version) {
+            reg32_write_masked(
+                SOC_EMIF_0_REGS,
+                EMIF_DDR_PHY_CTRL_1,
+                DDR3_EMIF_DDR_PHY_CTRL_1_DY_PWRDN,
+                DDR3_EMIF_DDR_PHY_CTRL_1_DY_PWRDN,
+            );
+        }
+
+        reg32_write(
+            SOC_EMIF_0_REGS,
+            EMIF_DDR_PHY_CTRL_1_SHDW,
+            DDR3_EMIF_DDR_PHY_CTRL_1_SHDW,
+        );
+
+        /* dynamic power down */
+        if (DEVICE_VERSION_2_1 == version) || (DEVICE_VERSION_2_0 == version) {
+            reg32_write_masked(
+                SOC_EMIF_0_REGS,
+                EMIF_DDR_PHY_CTRL_1_SHDW,
+                DDR3_EMIF_DDR_PHY_CTRL_1_SHDW_DY_PWRDN,
+                DDR3_EMIF_DDR_PHY_CTRL_1_SHDW_DY_PWRDN,
+            );
+        }
+
+        // final emif setup
+        //
+
+        reg32_write(
+            SOC_EMIF_0_REGS,
+            EMIF_DDR_PHY_CTRL_2,
+            DDR3_EMIF_DDR_PHY_CTRL_2,
+        );
+
+        reg32_write(SOC_EMIF_0_REGS, EMIF_SDRAM_TIM_1, DDR3_EMIF_SDRAM_TIM_1);
+        reg32_write(
+            SOC_EMIF_0_REGS,
+            EMIF_SDRAM_TIM_1_SHDW,
+            DDR3_EMIF_SDRAM_TIM_1_SHDW,
+        );
+
+        reg32_write(SOC_EMIF_0_REGS, EMIF_SDRAM_TIM_2, DDR3_EMIF_SDRAM_TIM_2);
+        reg32_write(
+            SOC_EMIF_0_REGS,
+            EMIF_SDRAM_TIM_2_SHDW,
+            DDR3_EMIF_SDRAM_TIM_2_SHDW,
+        );
+
+        reg32_write(SOC_EMIF_0_REGS, EMIF_SDRAM_TIM_3, DDR3_EMIF_SDRAM_TIM_3);
+        reg32_write(
+            SOC_EMIF_0_REGS,
+            EMIF_SDRAM_TIM_3_SHDW,
+            DDR3_EMIF_SDRAM_TIM_3_SHDM,
+        );
+
+        reg32_write(
+            SOC_EMIF_0_REGS,
+            EMIF_SDRAM_REF_CTRL,
+            DDR3_EMIF_SDRAM_REF_CTRL_VAL1,
+        );
+        reg32_write(
+            SOC_EMIF_0_REGS,
+            EMIF_SDRAM_REF_CTRL_SHDW,
+            DDR3_EMIF_SDRAM_REF_CTRL_SHDW_VAL1,
+        );
+
+        reg32_write(SOC_EMIF_0_REGS, EMIF_ZQ_CONFIG, DDR3_EMIF_ZQ_CONFIG_VAL);
+        reg32_write(SOC_EMIF_0_REGS, EMIF_SDRAM_CONFIG, DDR3_EMIF_SDRAM_CONFIG);
+
+        reg32_write(
+            CONTROL_MODULE_BASE,
+            CONTROL_SECURE_EMIF_SDRAM_CONFIG,
+            DDR3_EMIF_SDRAM_CONFIG,
+        );
     }
 }

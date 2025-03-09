@@ -25,7 +25,15 @@ pub fn get_board_info() -> BoardInfo {
 // Platform-specific UART functions
 #[cfg(feature = "qemu")]
 mod platform {
-    pub fn get_board_info() {}
+    use super::*;
+    pub fn get_board_info() -> BoardInfo {
+        BoardInfo {
+            header: [0; EEPROM_BOARD_HEADER_LEN as usize],
+            name: [0; EEPROM_BOARD_NAME_LEN as usize],
+            serial: [0; EEPROM_BOARD_SERIAL_LEN as usize],
+            version: [0; EEPROM_BOARD_VERSION_LEN as usize],
+        }
+    }
 }
 
 #[cfg(feature = "bbb")]

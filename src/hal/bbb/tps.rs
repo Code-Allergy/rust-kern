@@ -162,6 +162,11 @@ pub const OPP_TABLE: [OppConfig; 10] = [
     }, // OPP NITRO 1000Mhz - 1.325v
 ];
 
+pub fn get_opp_config() -> &'static OppConfig {
+    let opp_max_idx = boot_max_opp_get();
+    &OPP_TABLE[opp_max_idx as usize]
+}
+
 fn cleanup_interrupt() {
     i2c::master_int_clear_ex(i2c::I2C_INTERRUPT_FLAG_TO_CLR);
 }

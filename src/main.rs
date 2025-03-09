@@ -24,16 +24,18 @@ pub extern "C" fn rust_main() -> ! {
     println!("Uart initialized!");
     println!("Bootloader loaded at 0x{:x}", get_boot_entry());
 
-    ccm::init();
-    println!("CCM initialized!");
     i2c::init();
     println!("I2C initialized!");
+    ccm::init();
+    println!("CCM initialized!");
     dram::init();
 
     let board = hal::board::get_board_info();
     dbg!(board);
 
     println!("DRAM initialized!");
+    // test if the dram works by writing to 0x80000000, then reading it back
+
     println!("Time to hang!\n");
     loop {}
 }
