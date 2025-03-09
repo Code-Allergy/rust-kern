@@ -1,8 +1,6 @@
 use crate::hal::bbb::cm::*;
 use crate::hal::util::{reg32_read, reg32_read_masked, reg32_write, reg32_write_masked};
 
-use core::ptr;
-
 const GPIO1_BASE: u32 = 0x4804c000;
 const GPIO_CTRL_OFF: u32 = 0x130;
 const GPIO_OE_OFF: u32 = 0x134;
@@ -36,11 +34,11 @@ pub fn init() {
 
         // Enable UART0 module clock
         reg32_write_masked(CM_WKUP_BASE, CM_WKUP_UART0_CLKCTRL, 0x3, 0x2);
-        while ((reg32_read(CM_WKUP_BASE, CM_WKUP_UART0_CLKCTRL) & (0x3 << 16)) > 0) {} // Wait for fully enabled
+        while (reg32_read(CM_WKUP_BASE, CM_WKUP_UART0_CLKCTRL) & (0x3 << 16)) > 0 {} // Wait for fully enabled
 
         // Enable UART0 interface clock (l4_wkup)
         reg32_write_masked(CM_WKUP_BASE, CM_WKUP_L4WKUP_CLKCTRL, 0x3, 0x2);
-        while (reg32_read(CM_WKUP_BASE, CM_WKUP_L4WKUP_CLKCTRL) & (0x3 << 16) > 0) {} // Wait for fully enabled
+        while (reg32_read(CM_WKUP_BASE, CM_WKUP_L4WKUP_CLKCTRL) & (0x3 << 16)) > 0 {} // Wait for fully enabled
 
         // // mux pins to UART0
         reg32_write(CONTROL_MODULE_BASE, CONTROL_MODULE_CONF_UART0_RXD, 0x30);
@@ -49,7 +47,7 @@ pub fn init() {
         // /* Now the steps described in the TRM (19.4.1.1)*/
         // // uart reset
         reg32_write_masked(UART0_BASE, UART_SYSC_OFF, 0x2, 0x2);
-        while ((reg32_read(UART0_BASE, UART_SYSS_OFF) & 0x1) != 1) {} // Wait for reset to complete
+        while (reg32_read(UART0_BASE, UART_SYSS_OFF) & 0x1) != 1 {} // Wait for reset to complete
         reg32_write(UART0_BASE, UART_SYSC_OFF, 0x8);
 
         /*-------------- 19.4.1.1.2 FIFOs and DMA Settings --------------- */
@@ -159,11 +157,11 @@ pub fn init() {
 
 pub fn write_byte(c: u8) {
     unsafe {
-        if (c == b'\n') {
+        if c == b'\n' {
             write_byte('\r' as u8);
         }
 
-        while ((reg32_read(UART0_BASE, UART_LSR_UART_OFF) & 0x20) != 0x20) {}
+        while (reg32_read(UART0_BASE, UART_LSR_UART_OFF) & 0x20) != 0x20 {}
         reg32_write(UART0_BASE, UART_THR_OFF, c as u32);
     }
 }

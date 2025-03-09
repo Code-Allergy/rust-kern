@@ -3,7 +3,7 @@
 
 mod hal;
 mod panic;
-use crate::hal::{dram, uart};
+use crate::hal::{ccm, dram, i2c, uart};
 
 fn get_boot_entry() -> usize {
     unsafe extern "C" {
@@ -24,6 +24,8 @@ pub extern "C" fn rust_main() -> ! {
     println!("Uart initialized!");
     println!("Bootloader loaded at 0x{:x}", get_boot_entry());
 
+    ccm::init();
+    i2c::init();
     dram::init();
     println!("DRAM initialized!");
     println!("Time to hang!\n");

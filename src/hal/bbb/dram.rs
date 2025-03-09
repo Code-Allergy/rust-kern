@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::hal::util::*;
 
 use super::cm::*;
@@ -43,12 +44,11 @@ pub fn init_emif() {
         reg_val |= CLKCTRL_MODULEMODE_ENABLE;
         reg32_write(CM_PER_BASE, CM_PER_EMIF_CLKCTRL, reg_val);
 
-        while ((reg32_read(CM_PER_BASE, CM_PER_L3_CLKSTCTRL)
-            & (CM_PER_L3_CLKSTCTRL_CLKACTIVITY_EMIF_GCLK
-                | CM_PER_L3_CLKSTCTRL_CLKACTIVITY_L3_GCLK))
-            != (CM_PER_L3_CLKSTCTRL_CLKACTIVITY_EMIF_GCLK
-                | CM_PER_L3_CLKSTCTRL_CLKACTIVITY_L3_GCLK))
-        {}
+        while (reg32_read(CM_PER_BASE, CM_PER_L3_CLKSTCTRL)
+            & (CM_PER_L3_CLKSTCTRL_CLKACTIVITY_EMIF_GCLK | CM_PER_L3_CLKSTCTRL_CLKACTIVITY_L3_GCLK))
+            != (CM_PER_L3_CLKSTCTRL_CLKACTIVITY_EMIF_GCLK | CM_PER_L3_CLKSTCTRL_CLKACTIVITY_L3_GCLK)
+        {
+        }
     }
 }
 
