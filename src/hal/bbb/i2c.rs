@@ -125,6 +125,7 @@ pub const I2C_SYSTEM_CLOCK: u32 = 48_000_000;
 pub const I2C_INTERNAL_CLOCK: u32 = 12_000_000;
 /// I2C bus speed or frequency - 100Khz
 pub const I2C_OUTPUT_CLOCK: u32 = 100_000;
+pub const I2C_INTERRUPT_FLAG_TO_CLR: u32 = 0x7FF;
 
 pub fn master_disable() {
     unsafe {
@@ -160,9 +161,9 @@ pub fn master_enable() {
     }
 }
 
-pub fn master_slave_addr_set(addr: u32) {
+pub fn master_slave_addr_set(addr: u8) {
     unsafe {
-        reg32_write(I2C_BASE_ADDR, I2C_SA, addr);
+        reg32_write(I2C_BASE_ADDR, I2C_SA, addr as u32);
     }
 }
 
@@ -440,4 +441,28 @@ pub fn mux_pins(instance: u32) {
         },
         _ => {}
     }
+}
+
+pub fn device_write(addr: u8, data: &[u8]) {
+    let mut i = 0;
+    let mut len = data.len();
+    master_slave_addr_set(addr);
+    set_data_count(len as u32);
+    master_int_clear_ex(I2C_INTERRUPT_FLAG_TO_CLR);
+    master_control(I2C_CFG_MST_TX);
+    master_start();
+
+    while !master_bus_busy() {}
+
+    while (master_int_raw_status() & I2C_INT_TRANSMIT_READY == I2C_INT_TRANSMIT_READY) && len > 0 {
+        master_data_put(data[i]);
+        master_int_clear_ex(I2C_INT_TRANSMIT_READY);
+        i += 1;
+        len -= 1;
+    }
+
+    master_stop();
+
+    while master_int_raw_status() & I2C_INT_STOP_CONDITION == 0 {}
+    master_int_clear_ex(I2C_INT_STOP_CONDITION);
 }

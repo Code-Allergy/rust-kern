@@ -10,5 +10,6 @@ mod platform {
 
 #[cfg(feature = "bbb")]
 mod platform {
+    use crate::hal::bbb::cm::get_device_version;
     pub fn init() {}
 }

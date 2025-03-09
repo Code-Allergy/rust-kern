@@ -26,7 +26,7 @@ pub fn read(buf: &mut [u8], mut len: u32, offset: u32) {
     i2c::master_start();
 
     let mut idx = 0;
-    while (len > 0) {
+    while len > 0 {
         while !i2c::master_int_raw_status_ex(i2c::I2C_INT_RECEIVE_READY) {}
         buf[idx] = i2c::master_data_get();
         i2c::master_int_clear_ex(i2c::I2C_INT_RECEIVE_READY);
@@ -40,7 +40,7 @@ pub fn read(buf: &mut [u8], mut len: u32, offset: u32) {
     i2c::master_int_clear_ex(i2c::I2C_INT_STOP_CONDITION);
 }
 
-pub fn init(slave: u32) {
+pub fn init(slave: u8) {
     i2c::init_clocks();
     i2c::mux_pins(0);
     i2c::master_disable();
