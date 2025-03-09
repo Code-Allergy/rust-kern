@@ -36,6 +36,5 @@ pub extern "C" fn rust_main() -> ! {
     println!("DRAM initialized!");
     // test if the dram works by writing to 0x80000000, then reading it back
 
-    println!("Time to hang!\n");
-    loop {}
+    panic!("End of main");
 }
