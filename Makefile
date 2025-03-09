@@ -6,7 +6,7 @@ MLO_DEST_ADDR = 0x402f0400
 OUT_SDIMG = $(BUILD_DIR)/sd.img
 OUT_MLO = $(BUILD_DIR)/MLO
 OUT_BIN = $(BUILD_DIR)/bootloader.bin
-OUT_ELF = target/armv7a-none-eabi/release/rust-bootloader
+OUT_ELF = target/armv7a-none-eabi/debug/rust-bootloader
 
 .PHONY: all build-rust debug clean
 all: $(OUT_SDIMG)
@@ -32,7 +32,7 @@ $(OUT_ELF): build-rust
 
 
 build-rust: src/main.rs src/boot.S
-	cargo build --release
+	cargo build --features qemu
 
 debug:
 	cargo build
@@ -40,6 +40,20 @@ debug:
 
 $(BUILD_DIR):
 	mkdir -p $@
+
+qemu: $(OUT_BIN)
+	qemu-system-arm -m 512M -M cubieboard \
+	-cpu cortex-a8 \
+	-serial mon:stdio -nographic \
+	-kernel $(OUT_BIN) \
+	-d guest_errors,unimp,int  -D qemu.log
+
+qemu-gdb: $(OUT_BIN)
+	qemu-system-arm -m 512M -M cubieboard \
+	-cpu cortex-a8 \
+	-serial mon:stdio -nographic \
+	-kernel $(OUT_BIN) \
+	-d guest_errors,unimp,int -S -gdb tcp::1234
 
 clean:
 	cargo clean

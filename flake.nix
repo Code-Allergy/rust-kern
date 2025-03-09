@@ -23,6 +23,7 @@
         pkgs.gcc-arm-embedded  # ARM bare-metal GCC toolchain
         pkgs.rustup            # Rustup to install the correct target
         pkgs.parted
+        pkgs.qemu
       ];
 
       shellHook = ''

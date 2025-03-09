@@ -3,6 +3,28 @@ use std::path::Path;
 use std::process::Command;
 
 fn main() {
+    // Detect Cargo features
+    let is_bbb = env::var("CARGO_FEATURE_BBB").is_ok();
+    let is_qemu = env::var("CARGO_FEATURE_QEMU").is_ok();
+
+    // Ensure only one feature is enabled at a time
+    if is_bbb && is_qemu {
+        panic!("Cannot enable both 'bbb' and 'qemu' features at the same time.");
+    }
+
+    if is_bbb {
+        println!("cargo:rustc-cfg=feature=\"bbb\"");
+        println!("Building for BeagleBone Black...");
+        println!("cargo:rustc-link-arg=-Tlinker_bbb.ld");
+    } else if is_qemu {
+        println!("cargo:rustc-cfg=feature=\"qemu\"");
+        println!("Building for QEMU...");
+        println!("cargo:rustc-link-arg=-Tlinker_qemu.ld");
+        // Add QEMU-specific build steps here
+    } else {
+        panic!("Either the 'bbb' or 'qemu' feature must be enabled.");
+    }
+
     println!("cargo:rerun-if-changed=src/boot.S");
 
     // Get output directory from cargo
@@ -53,7 +75,6 @@ fn main() {
     // Add necessary linker flags
     println!("cargo:rustc-link-arg=-nostartfiles");
     println!("cargo:rustc-link-arg=-nostdlib");
-    println!("cargo:rustc-link-arg=-Tlinker.ld");
     println!("cargo:rustc-link-arg=-static");
     println!("cargo:rustc-link-arg=-mcpu=cortex-a8");
     println!("cargo:rustc-link-arg=-march=armv7-a");
