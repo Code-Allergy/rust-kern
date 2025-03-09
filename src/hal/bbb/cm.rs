@@ -1047,4 +1047,43 @@ pub fn init_interface_clk() {
     }
 }
 
+pub fn init_power_domain_transition() {
+    unsafe {
+        reg32_write_masked(
+            CM_PER_BASE,
+            CM_PER_L3_CLKSTCTRL,
+            CLKTRCTRL_SW_WKUP,
+            CLKTRCTRL_SW_WKUP,
+        );
+
+        reg32_write_masked(
+            CM_PER_BASE,
+            CM_PER_L4LS_CLKSTCTRL,
+            CLKTRCTRL_SW_WKUP,
+            CLKTRCTRL_SW_WKUP,
+        );
+
+        reg32_write_masked(
+            CM_PER_BASE,
+            CM_PER_L4FW_CLKSTCTRL,
+            CLKTRCTRL_SW_WKUP,
+            CLKTRCTRL_SW_WKUP,
+        );
+
+        reg32_write_masked(
+            CM_PER_BASE,
+            CM_WKUP_CLKSTCTRL,
+            CLKTRCTRL_SW_WKUP,
+            CLKTRCTRL_SW_WKUP,
+        );
+
+        reg32_write_masked(
+            CM_PER_BASE,
+            CM_PER_L3S_CLKSTCTRL,
+            CLKCTRL_MODULEMODE_ENABLE,
+            CLKCTRL_MODULEMODE_ENABLE,
+        );
+    }
+}
+
 pub fn init_plls() {}

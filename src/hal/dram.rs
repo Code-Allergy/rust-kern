@@ -12,13 +12,13 @@ mod platform {
 
 #[cfg(feature = "bbb")]
 mod platform {
-    pub use crate::hal::bbb::dram::{init_emif, init_vtp};
+    pub use crate::hal::bbb::dram::{init_ddr_phys, init_emif, init_vtp};
     use crate::{
         dbg,
         hal::bbb::{
             cm::{
                 get_device_version, init_core_pll, init_ddr_pll, init_interface_clk, init_mpu_pll,
-                init_per_pll, init_plls,
+                init_per_pll, init_plls, init_power_domain_transition,
             },
             tps::*,
         },
@@ -34,10 +34,11 @@ mod platform {
         init_per_pll();
         init_ddr_pll();
         init_interface_clk();
-        println!("Done MPUPLL");
-        // init_plls();
+        init_power_domain_transition();
+        // display_pll_init();
 
         init_emif();
         init_vtp();
+        init_ddr_phys();
     }
 }
