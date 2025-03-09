@@ -10,8 +10,9 @@ mod platform {
 
 #[cfg(feature = "bbb")]
 mod platform {
-    use crate::hal::bbb::i2c::init_clocks;
+    use crate::hal::bbb::i2c::{init_clocks, mux_pins};
     pub fn init() {
         init_clocks();
+        mux_pins(0);
     }
 }

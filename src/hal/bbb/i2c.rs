@@ -193,3 +193,25 @@ pub fn init_clocks() {
         {}
     }
 }
+
+pub fn mux_pins(instance: u32) {
+    match instance {
+        0 => unsafe {
+            reg32_write(
+                CONTROL_MODULE_BASE,
+                CONTROL_CONF_I2C0_SDA,
+                CONTROL_CONF_I2C0_SDA_CONF_I2C0_SDA_RXACTIVE
+                    | CONTROL_CONF_I2C0_SDA_CONF_I2C0_SDA_SLEWCTRL
+                    | CONTROL_CONF_I2C0_SDA_CONF_I2C0_SDA_PUTYPESEL,
+            );
+            reg32_write(
+                CONTROL_MODULE_BASE,
+                CONTROL_CONF_I2C0_SCL,
+                CONTROL_CONF_I2C0_SCL_CONF_I2C0_SCL_RXACTIVE
+                    | CONTROL_CONF_I2C0_SCL_CONF_I2C0_SCL_SLEWCTRL
+                    | CONTROL_CONF_I2C0_SCL_CONF_I2C0_SCL_PUTYPESEL,
+            );
+        },
+        _ => {}
+    }
+}

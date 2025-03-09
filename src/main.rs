@@ -25,7 +25,9 @@ pub extern "C" fn rust_main() -> ! {
     println!("Bootloader loaded at 0x{:x}", get_boot_entry());
 
     ccm::init();
+    println!("CCM initialized!");
     i2c::init();
+    println!("I2C initialized!");
     dram::init();
     println!("DRAM initialized!");
     println!("Time to hang!\n");

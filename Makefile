@@ -17,7 +17,7 @@ MLO_DEST_ADDR = 0x402f0400
 OUT_SDIMG = $(BUILD_DIR)/sd.img
 OUT_MLO = $(BUILD_DIR)/MLO
 OUT_BIN = $(BUILD_DIR)/bootloader.bin
-OUT_ELF = target/armv7a-none-eabi/debug/rust-bootloader
+OUT_ELF = target/armv7a-none-eabi/release/rust-bootloader
 
 .PHONY: all build-rust debug clean build-bbb build-qemu flash qemu qemu-gdb
 
@@ -66,7 +66,7 @@ $(BUILD_DIR)/bootloader.bin: $(OUT_ELF) | $(BUILD_DIR)
 
 # This rule builds the ELF file with the appropriate features
 $(OUT_ELF): src/main.rs src/boot.S
-	cargo build --features $(FEATURES)
+	cargo build --release --features $(FEATURES)
 
 build-rust: $(OUT_ELF)
 
