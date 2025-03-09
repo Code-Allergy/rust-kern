@@ -29,6 +29,10 @@ pub extern "C" fn rust_main() -> ! {
     i2c::init();
     println!("I2C initialized!");
     dram::init();
+
+    let board = hal::board::get_board_info();
+    dbg!(board);
+
     println!("DRAM initialized!");
     println!("Time to hang!\n");
     loop {}

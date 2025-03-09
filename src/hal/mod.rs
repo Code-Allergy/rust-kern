@@ -1,3 +1,4 @@
+pub mod board;
 pub mod ccm;
 pub mod dram;
 pub mod i2c;
