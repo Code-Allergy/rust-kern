@@ -2,22 +2,12 @@
 
 use crate::hal::util::*;
 
+pub const CM_PER_BASE: u32 = 0x44E00000;
+pub const CM_WKUP_BASE: u32 = 0x44E00400;
 pub const CONTROL_MODULE_BASE: u32 = 0x44E10000;
+
 pub const CONTROL_MODULE_CONF_UART0_RXD: u32 = 0x970;
 pub const CONTROL_MODULE_CONF_UART0_TXD: u32 = 0x974;
-
-pub const CM_PER_BASE: u32 = 0x44E00000;
-pub const CM_PER_L3S_CLKSTCTRL: u32 = 0x04;
-pub const CM_PER_L3_CLKSTCTRL: u32 = 0x0C;
-pub const CM_PER_GPIO1_CLKCTRL: u32 = 0xAC;
-pub const CM_PER_EMIF_CLKCTRL: u32 = 0x28;
-pub const CM_PER_L3_INSTR_CLKCTRL: u32 = 0xDC;
-pub const CM_PER_L3_CLKCTRL: u32 = 0xE0;
-pub const CM_PER_OCPWP_L3_CLKSTCTRL: u32 = 0x12C;
-
-pub const CM_WKUP_BASE: u32 = 0x44E00400;
-
-pub const CM_PER_EMIF_FW_CLKCTRL: u32 = 0xd0;
 
 /* Constants to configure MPU divider */
 pub const MPUPLL_N: u32 = 23;
@@ -671,6 +661,77 @@ pub const CM_WKUP_CM_DIV_M2_DPLL_DDR_ST_DPLL_CLKOUT_SHIFT: u32 = 0x00000009;
 pub const CM_WKUP_CM_DIV_M2_DPLL_DDR_ST_DPLL_CLKOUT_CLK_ENABLED: u32 = 0x1;
 pub const CM_WKUP_CM_DIV_M2_DPLL_DDR_ST_DPLL_CLKOUT_CLK_GATED: u32 = 0x0;
 
+// CM_PER registers
+pub const CM_PER_L4LS_CLKSTCTRL: u32 = 0x0;
+pub const CM_PER_L3S_CLKSTCTRL: u32 = 0x4;
+pub const CM_PER_L4FW_CLKSTCTRL: u32 = 0x8;
+pub const CM_PER_L3_CLKSTCTRL: u32 = 0xc;
+pub const CM_PER_CPGMAC0_CLKCTRL: u32 = 0x14;
+pub const CM_PER_LCDC_CLKCTRL: u32 = 0x18;
+pub const CM_PER_USB0_CLKCTRL: u32 = 0x1c;
+pub const CM_PER_MLB_CLKCTRL: u32 = 0x20;
+pub const CM_PER_TPTC0_CLKCTRL: u32 = 0x24;
+pub const CM_PER_EMIF_CLKCTRL: u32 = 0x28;
+pub const CM_PER_OCMCRAM_CLKCTRL: u32 = 0x2c;
+pub const CM_PER_GPMC_CLKCTRL: u32 = 0x30;
+pub const CM_PER_MCASP0_CLKCTRL: u32 = 0x34;
+pub const CM_PER_UART5_CLKCTRL: u32 = 0x38;
+pub const CM_PER_MMC0_CLKCTRL: u32 = 0x3c;
+pub const CM_PER_ELM_CLKCTRL: u32 = 0x40;
+pub const CM_PER_I2C2_CLKCTRL: u32 = 0x44;
+pub const CM_PER_I2C1_CLKCTRL: u32 = 0x48;
+pub const CM_PER_SPI0_CLKCTRL: u32 = 0x4c;
+pub const CM_PER_SPI1_CLKCTRL: u32 = 0x50;
+pub const CM_PER_L4LS_CLKCTRL: u32 = 0x60;
+pub const CM_PER_L4FW_CLKCTRL: u32 = 0x64;
+pub const CM_PER_MCASP1_CLKCTRL: u32 = 0x68;
+pub const CM_PER_UART1_CLKCTRL: u32 = 0x6c;
+pub const CM_PER_UART2_CLKCTRL: u32 = 0x70;
+pub const CM_PER_UART3_CLKCTRL: u32 = 0x74;
+pub const CM_PER_UART4_CLKCTRL: u32 = 0x78;
+pub const CM_PER_TIMER7_CLKCTRL: u32 = 0x7c;
+pub const CM_PER_TIMER2_CLKCTRL: u32 = 0x80;
+pub const CM_PER_TIMER3_CLKCTRL: u32 = 0x84;
+pub const CM_PER_TIMER4_CLKCTRL: u32 = 0x88;
+pub const CM_PER_RNG_CLKCTRL: u32 = 0x90;
+pub const CM_PER_AES0_CLKCTRL: u32 = 0x94;
+pub const CM_PER_SHA0_CLKCTRL: u32 = 0xa0;
+pub const CM_PER_PKA_CLKCTRL: u32 = 0xa4;
+pub const CM_PER_GPIO6_CLKCTRL: u32 = 0xa8;
+pub const CM_PER_GPIO1_CLKCTRL: u32 = 0xac;
+pub const CM_PER_GPIO2_CLKCTRL: u32 = 0xb0;
+pub const CM_PER_GPIO3_CLKCTRL: u32 = 0xb4;
+pub const CM_PER_TPCC_CLKCTRL: u32 = 0xbc;
+pub const CM_PER_DCAN0_CLKCTRL: u32 = 0xc0;
+pub const CM_PER_DCAN1_CLKCTRL: u32 = 0xc4;
+pub const CM_PER_EPWMSS1_CLKCTRL: u32 = 0xcc;
+pub const CM_PER_EMIF_FW_CLKCTRL: u32 = 0xd0;
+pub const CM_PER_EPWMSS0_CLKCTRL: u32 = 0xd4;
+pub const CM_PER_EPWMSS2_CLKCTRL: u32 = 0xd8;
+pub const CM_PER_L3_INSTR_CLKCTRL: u32 = 0xdc;
+pub const CM_PER_L3_CLKCTRL: u32 = 0xe0;
+pub const CM_PER_IEEE5000_CLKCTRL: u32 = 0xe4;
+pub const CM_PER_ICSS_CLKCTRL: u32 = 0xe8;
+pub const CM_PER_TIMER5_CLKCTRL: u32 = 0xec;
+pub const CM_PER_TIMER6_CLKCTRL: u32 = 0xf0;
+pub const CM_PER_MMC1_CLKCTRL: u32 = 0xf4;
+pub const CM_PER_MMC2_CLKCTRL: u32 = 0xf8;
+pub const CM_PER_TPTC1_CLKCTRL: u32 = 0xfc;
+pub const CM_PER_TPTC2_CLKCTRL: u32 = 0x100;
+pub const CM_PER_SPINLOCK_CLKCTRL: u32 = 0x10c;
+pub const CM_PER_MAILBOX0_CLKCTRL: u32 = 0x110;
+pub const CM_PER_L4HS_CLKSTCTRL: u32 = 0x11c;
+pub const CM_PER_L4HS_CLKCTRL: u32 = 0x120;
+pub const CM_PER_MSTR_EXPS_CLKCTRL: u32 = 0x124;
+pub const CM_PER_SLV_EXPS_CLKCTRL: u32 = 0x128;
+pub const CM_PER_OCPWP_L3_CLKSTCTRL: u32 = 0x12c;
+pub const CM_PER_OCPWP_CLKCTRL: u32 = 0x130;
+pub const CM_PER_ICSS_CLKSTCTRL: u32 = 0x140;
+pub const CM_PER_CPSW_CLKSTCTRL: u32 = 0x144;
+pub const CM_PER_LCDC_CLKSTCTRL: u32 = 0x148;
+pub const CM_PER_CLKDIV32K_CLKCTRL: u32 = 0x14c;
+pub const CM_PER_CLK_24MHZ_CLKSTCTRL: u32 = 0x150;
+
 pub fn get_device_version() -> u32 {
     unsafe { reg32_read(CONTROL_MODULE_BASE, CONTROL_DEVICE_ID) >> CONTROL_DEVICE_ID_DEVREV_SHIFT }
 }
@@ -906,6 +967,82 @@ pub fn init_ddr_pll() {
             CM_WKUP_CM_IDLEST_DPLL_DDR,
             CM_WKUP_CM_IDLEST_DPLL_DDR_ST_DPLL_CLK,
         ) != CM_WKUP_CM_IDLEST_DPLL_DDR_ST_DPLL_CLK
+        {}
+    }
+}
+
+pub fn init_interface_clk() {
+    unsafe {
+        // L3
+        reg32_write_masked(
+            CM_PER_BASE,
+            CM_PER_L3_CLKCTRL,
+            CLKCTRL_MODULEMODE_ENABLE,
+            CLKCTRL_MODULEMODE_ENABLE,
+        );
+
+        while reg32_read_masked(CM_PER_BASE, CM_PER_L3_CLKCTRL, CLKCTRL_MODULEMODE)
+            != CLKCTRL_MODULEMODE_ENABLE
+        {}
+
+        // L4LS
+        reg32_write_masked(
+            CM_PER_BASE,
+            CM_PER_L4LS_CLKCTRL,
+            CLKCTRL_MODULEMODE_ENABLE,
+            CLKCTRL_MODULEMODE_ENABLE,
+        );
+
+        while reg32_read_masked(CM_PER_BASE, CM_PER_L4LS_CLKCTRL, CLKCTRL_MODULEMODE)
+            != CLKCTRL_MODULEMODE_ENABLE
+        {}
+
+        // L4FW
+        reg32_write_masked(
+            CM_PER_BASE,
+            CM_PER_L4FW_CLKCTRL,
+            CLKCTRL_MODULEMODE_ENABLE,
+            CLKCTRL_MODULEMODE_ENABLE,
+        );
+
+        while reg32_read_masked(CM_PER_BASE, CM_PER_L4FW_CLKCTRL, CLKCTRL_MODULEMODE)
+            != CLKCTRL_MODULEMODE_ENABLE
+        {}
+
+        // L4WKUP
+        reg32_write_masked(
+            CM_WKUP_BASE,
+            CM_WKUP_L4WKUP_CLKCTRL,
+            CLKCTRL_MODULEMODE_ENABLE,
+            CLKCTRL_MODULEMODE_ENABLE,
+        );
+
+        while reg32_read_masked(CM_WKUP_BASE, CM_WKUP_L4WKUP_CLKCTRL, CLKCTRL_MODULEMODE)
+            != CLKCTRL_MODULEMODE_ENABLE
+        {}
+
+        // L3 instr
+        reg32_write_masked(
+            CM_PER_BASE,
+            CM_PER_L3_INSTR_CLKCTRL,
+            CLKCTRL_MODULEMODE_ENABLE,
+            CLKCTRL_MODULEMODE_ENABLE,
+        );
+
+        while reg32_read_masked(CM_PER_BASE, CM_PER_L3_INSTR_CLKCTRL, CLKCTRL_MODULEMODE)
+            != CLKCTRL_MODULEMODE_ENABLE
+        {}
+
+        // L4HS
+        reg32_write_masked(
+            CM_PER_BASE,
+            CM_PER_L4HS_CLKCTRL,
+            CLKCTRL_MODULEMODE_ENABLE,
+            CLKCTRL_MODULEMODE_ENABLE,
+        );
+
+        while reg32_read_masked(CM_PER_BASE, CM_PER_L4HS_CLKCTRL, CLKCTRL_MODULEMODE)
+            != CLKCTRL_MODULEMODE_ENABLE
         {}
     }
 }
