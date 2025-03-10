@@ -1,4 +1,7 @@
 use crate::println;
+
+pub use platform::{DRAM_END, DRAM_SIZE, DRAM_START};
+
 /// Initialize the DRAM, then run a quick test
 pub fn init() {
     platform::init(); // Platform-specific initialization

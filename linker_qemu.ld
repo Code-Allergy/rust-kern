@@ -28,7 +28,8 @@ SECTIONS
 
     .boot_tables 0x5F610000 (NOLOAD) : {
         _boot_tables_start = .;
-        *(.boot_tables*)
+        . += 4096 * 4; /* Reserve 16KB for section paging from bootloader */
         _boot_tables_end = .;
     }
+    . = ALIGN(4096);
 }

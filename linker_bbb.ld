@@ -60,8 +60,15 @@ SECTIONS
     __StackStart = __BBB_LD_SRAM_END - 0xf;
 
     /* Shared uninitialized RAM */
-	  .shared (NOLOAD) : { *( .shared .shared.* ) } >L3_OCMCO_RAM :NONE
+    .shared (NOLOAD) : { *( .shared .shared.* ) } >L3_OCMCO_RAM :NONE
 
-	  /* Private uninitialized RAM */
-	  .noinit (NOLOAD) : { *( .noinit .noinit.* ) } >SRAM :NONE
+    /* Private uninitialized RAM */
+    .noinit (NOLOAD) : { *( .noinit .noinit.* ) } >SRAM :NONE
+
+    .boot_tables 0x9F610000 (NOLOAD) : {
+        _boot_tables_start = .;
+        . += 4096 * 4; /* Reserve 16KB for section paging from bootloader */
+        _boot_tables_end = .;
+    } > DRAM
+    . = ALIGN(4096);
 }
