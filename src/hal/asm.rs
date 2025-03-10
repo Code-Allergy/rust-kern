@@ -23,6 +23,12 @@ pub unsafe fn set_dacr(dacr: u32) {
     }
 }
 
+pub unsafe fn nop() {
+    unsafe {
+        asm!("nop", options(nomem, nostack, preserves_flags));
+    }
+}
+
 pub unsafe fn wfi() {
     unsafe {
         asm!("wfi", options(nomem, nostack, preserves_flags));

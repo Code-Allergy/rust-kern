@@ -1,5 +1,6 @@
-use crate::hal::util::{
-    reg32_clear_bits, reg32_read, reg32_read_masked, reg32_write, reg32_write_masked,
+use crate::hal::{
+    asm,
+    util::{reg32_clear_bits, reg32_read, reg32_read_masked, reg32_write, reg32_write_masked},
 };
 
 // BASE
@@ -19,7 +20,10 @@ pub const MMC_SDMASA: u32 = 0x200;
 pub const MMC_BLK: u32 = 0x204;
 pub const MMC_ARG: u32 = 0x208;
 pub const MMC_CMD: u32 = 0x20C;
-
+pub const MMC_RSP10: u32 = 0x210;
+pub const MMC_RSP32: u32 = 0x214;
+pub const MMC_RSP54: u32 = 0x218;
+pub const MMC_RSP76: u32 = 0x21C;
 pub const MMC_DATA: u32 = 0x220;
 pub const MMC_PSTATE: u32 = 0x224;
 pub const MMC_HCTL: u32 = 0x228;
@@ -209,6 +213,150 @@ pub const MMCHS_HCTL_HSPE_SHIFT: u32 = 0x00000002;
 pub const MMCHS_HCTL_HSPE_HIGHSPEED: u32 = 0x1;
 pub const MMCHS_HCTL_HSPE_NORMALSPEED: u32 = 0x0;
 
+// freqs
+
+pub const MMCSD_IN_FREQ: u32 = 96000000; /* 96MHz */
+pub const MMCSD_INIT_FREQ: u32 = 400000; /* 400kHz */
+
+// sigen
+pub const HS_MMCSD_SIGEN_BADACCESS: u32 = MMCHS_ISE_BADA_SIGEN;
+pub const HS_MMCSD_SIGEN_CARDERROR: u32 = MMCHS_ISE_CERR_SIGEN;
+pub const HS_MMCSD_SIGEN_ADMAERROR: u32 = MMCHS_ISE_ADMAE_SIGEN;
+pub const HS_MMCSD_SIGEN_ACMD12ERR: u32 = MMCHS_ISE_ACE_SIGEN;
+pub const HS_MMCSD_SIGEN_DATABITERR: u32 = MMCHS_ISE_DEB_SIGEN;
+pub const HS_MMCSD_SIGEN_DATACRCERR: u32 = MMCHS_ISE_DCRC_SIGEN;
+pub const HS_MMCSD_SIGEN_DATATIMEOUT: u32 = MMCHS_ISE_DTO_SIGEN;
+pub const HS_MMCSD_SIGEN_CMDINDXERR: u32 = MMCHS_ISE_CIE_SIGEN;
+pub const HS_MMCSD_SIGEN_CMDBITERR: u32 = MMCHS_ISE_CEB_SIGEN;
+pub const HS_MMCSD_SIGEN_CMDCRCERR: u32 = MMCHS_ISE_CCRC_SIGEN;
+pub const HS_MMCSD_SIGEN_CMDTIMEOUT: u32 = MMCHS_ISE_CTO_SIGEN;
+pub const HS_MMCSD_SIGEN_CARDINS: u32 = MMCHS_ISE_CINS_SIGEN;
+pub const HS_MMCSD_SIGEN_BUFRDRDY: u32 = MMCHS_ISE_BRR_SIGEN;
+pub const HS_MMCSD_SIGEN_BUFWRRDY: u32 = MMCHS_ISE_BWR_SIGEN;
+pub const HS_MMCSD_SIGEN_TRNFCOMP: u32 = MMCHS_ISE_TC_SIGEN;
+pub const HS_MMCSD_SIGEN_CMDCOMP: u32 = MMCHS_ISE_CC_SIGEN;
+
+// ISE
+pub const MMCHS_ISE_ACE_SIGEN: u32 = 0x01000000;
+pub const MMCHS_ISE_ACE_SIGEN_SHIFT: u32 = 0x00000018;
+pub const MMCHS_ISE_ACE_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_ACE_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_ADMAE_SIGEN: u32 = 0x02000000;
+pub const MMCHS_ISE_ADMAE_SIGEN_SHIFT: u32 = 0x00000019;
+pub const MMCHS_ISE_ADMAE_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_ADMAE_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_BADA_SIGEN: u32 = 0x20000000;
+pub const MMCHS_ISE_BADA_SIGEN_SHIFT: u32 = 0x0000001D;
+pub const MMCHS_ISE_BADA_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_BADA_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_BGE_SIGEN: u32 = 0x00000004;
+pub const MMCHS_ISE_BGE_SIGEN_SHIFT: u32 = 0x00000002;
+pub const MMCHS_ISE_BGE_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_BGE_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_BRR_SIGEN: u32 = 0x00000020;
+pub const MMCHS_ISE_BRR_SIGEN_SHIFT: u32 = 0x00000005;
+pub const MMCHS_ISE_BRR_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_BRR_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_BSR_SIGEN: u32 = 0x00000400;
+pub const MMCHS_ISE_BSR_SIGEN_SHIFT: u32 = 0x0000000A;
+pub const MMCHS_ISE_BSR_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_BSR_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_BWR_SIGEN: u32 = 0x00000010;
+pub const MMCHS_ISE_BWR_SIGEN_SHIFT: u32 = 0x00000004;
+pub const MMCHS_ISE_BWR_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_BWR_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_CCRC_SIGEN: u32 = 0x00020000;
+pub const MMCHS_ISE_CCRC_SIGEN_SHIFT: u32 = 0x00000011;
+pub const MMCHS_ISE_CCRC_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_CCRC_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_CC_SIGEN: u32 = 0x00000001;
+pub const MMCHS_ISE_CC_SIGEN_SHIFT: u32 = 0x00000000;
+pub const MMCHS_ISE_CC_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_CC_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_CEB_SIGEN: u32 = 0x00040000;
+pub const MMCHS_ISE_CEB_SIGEN_SHIFT: u32 = 0x00000012;
+pub const MMCHS_ISE_CEB_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_CEB_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_CERR_SIGEN: u32 = 0x10000000;
+pub const MMCHS_ISE_CERR_SIGEN_SHIFT: u32 = 0x0000001C;
+pub const MMCHS_ISE_CERR_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_CERR_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_CIE_SIGEN: u32 = 0x00080000;
+pub const MMCHS_ISE_CIE_SIGEN_SHIFT: u32 = 0x00000013;
+pub const MMCHS_ISE_CIE_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_CIE_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_CINS_SIGEN: u32 = 0x00000040;
+pub const MMCHS_ISE_CINS_SIGEN_SHIFT: u32 = 0x00000006;
+pub const MMCHS_ISE_CINS_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_CINS_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_CIRQ_SIGEN: u32 = 0x00000100;
+pub const MMCHS_ISE_CIRQ_SIGEN_SHIFT: u32 = 0x00000008;
+pub const MMCHS_ISE_CIRQ_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_CIRQ_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_CREM_SIGEN: u32 = 0x00000080;
+pub const MMCHS_ISE_CREM_SIGEN_SHIFT: u32 = 0x00000007;
+pub const MMCHS_ISE_CREM_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_CREM_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_CTO_SIGEN: u32 = 0x00010000;
+pub const MMCHS_ISE_CTO_SIGEN_SHIFT: u32 = 0x00000010;
+pub const MMCHS_ISE_CTO_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_CTO_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_DCRC_SIGEN: u32 = 0x00200000;
+pub const MMCHS_ISE_DCRC_SIGEN_SHIFT: u32 = 0x00000015;
+pub const MMCHS_ISE_DCRC_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_DCRC_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_DEB_SIGEN: u32 = 0x00400000;
+pub const MMCHS_ISE_DEB_SIGEN_SHIFT: u32 = 0x00000016;
+pub const MMCHS_ISE_DEB_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_DEB_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_DMA_SIGEN: u32 = 0x00000008;
+pub const MMCHS_ISE_DMA_SIGEN_SHIFT: u32 = 0x00000003;
+pub const MMCHS_ISE_DMA_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_DMA_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_DTO_SIGEN: u32 = 0x00100000;
+pub const MMCHS_ISE_DTO_SIGEN_SHIFT: u32 = 0x00000014;
+pub const MMCHS_ISE_DTO_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_DTO_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_NULL: u32 = 0x00008000;
+pub const MMCHS_ISE_NULL_SHIFT: u32 = 0x0000000F;
+
+pub const MMCHS_ISE_OBI_SIGEN: u32 = 0x00000200;
+pub const MMCHS_ISE_OBI_SIGEN_SHIFT: u32 = 0x00000009;
+pub const MMCHS_ISE_OBI_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_OBI_SIGEN_MASKED: u32 = 0x0;
+
+pub const MMCHS_ISE_TC_SIGEN: u32 = 0x00000002;
+pub const MMCHS_ISE_TC_SIGEN_SHIFT: u32 = 0x00000001;
+pub const MMCHS_ISE_TC_SIGEN_ENABLED: u32 = 0x1;
+pub const MMCHS_ISE_TC_SIGEN_MASKED: u32 = 0x0;
+
+// con
+pub const MMCHS_CON_INIT: u32 = 0x00000002;
+
+// stat
+pub const MMCHS_STAT_CC: u32 = 0x00000001;
+pub const MMCHS_STAT_CC_SHIFT: u32 = 0x00000000;
+
 // redefs
 pub const HS_MMCSD_DATALINE_RESET: u32 = MMC_SYSCTL_SRD;
 pub const HS_MMCSD_CMDLINE_RESET: u32 = MMC_SYSCTL_SRC;
@@ -227,10 +375,17 @@ pub const HS_MMCSD_BUS_POWER_ON: u32 = MMCHS_HCTL_SDBP_PWRON << MMCHS_HCTL_SDBP_
 pub const HS_MMCSD_BUS_POWER_OFF: u32 = MMCHS_HCTL_SDBP_PWROFF << MMCHS_HCTL_SDBP_SHIFT;
 pub const HS_MMCSD_BUS_HIGHSPEED: u32 = MMCHS_HCTL_HSPE_HIGHSPEED << MMCHS_HCTL_HSPE_SHIFT;
 pub const HS_MMCSD_BUS_STDSPEED: u32 = MMCHS_HCTL_HSPE_NORMALSPEED << MMCHS_HCTL_HSPE_SHIFT;
+pub const HS_MMCSD_INTCLOCK_ON: u32 = MMC_SYSCTL_ICE_OSCILLATE << MMC_SYSCTL_ICE_SHIFT;
+pub const HS_MMCSD_INTCLOCK_OFF: u32 = MMC_SYSCTL_ICE_STOP << MMC_SYSCTL_ICE_SHIFT;
 
 pub const HS_MMCSD_AUTOIDLE_ENABLE: u32 = MMC_SYSCONFIG_AUTOIDLE_ON << MMC_SYSCONFIG_AUTOIDLE_SHIFT;
 pub const HS_MMCSD_AUTOIDLE_DISABLE: u32 =
     MMC_SYSCONFIG_AUTOIDLE_OFF << MMC_SYSCONFIG_AUTOIDLE_SHIFT;
+
+pub const SD_CMDR_NO_RESPONSE: u32 = 0 << 16;
+pub const SD_CMDR_LONG_RESPONSE: u32 = 1 << 16;
+pub const SD_CMDR_SHORT_RESPONSE: u32 = 1 << 17;
+pub const SD_CMDR_SHORT_RESPONSE_BUSY: u32 = 3 << 16;
 
 use super::regs::{
     base::{CM_PER_BASE, CONTROL_MODULE_BASE},
@@ -302,6 +457,91 @@ fn set_sd_bus_power(power: u32) -> Result<(), ()> {
     }
 }
 
+fn is_internal_clock_stable(mut retry: u32) -> bool {
+    unsafe {
+        let mut reg = 0;
+        while retry > 0 {
+            reg = reg32_read_masked(MMC0_BASE, MMC_SYSCTL, MMC_SYSCTL_ICS) >> MMC_SYSCTL_ICS_SHIFT;
+            retry -= 1;
+            if (reg == 1) {
+                break;
+            }
+        }
+
+        return reg == 1;
+    }
+}
+
+fn is_cmd_complete(mut retry: u32) -> bool {
+    unsafe {
+        while retry > 0 {
+            let reg = reg32_read_masked(MMC0_BASE, MMC_STAT, MMCHS_STAT_CC) >> MMCHS_STAT_CC_SHIFT;
+            if reg == 1 {
+                // Clear command complete flag
+                reg32_write_masked(MMC0_BASE, MMC_STAT, MMCHS_STAT_CC, MMCHS_STAT_CC);
+                return true;
+            }
+            retry -= 1;
+        }
+        false
+    }
+}
+
+fn internal_clock(power: u32) -> Result<(), ()> {
+    unsafe {
+        let reg = reg32_read_masked(MMC0_BASE, MMC_SYSCTL, !MMC_SYSCTL_ICE);
+        reg32_write(MMC0_BASE, MMC_SYSCTL, reg | power);
+
+        if power == HS_MMCSD_INTCLOCK_ON {
+            if !is_internal_clock_stable(0xFFFFF) {
+                Err(())
+            } else {
+                Ok(())
+            }
+        } else {
+            Ok(())
+        }
+    }
+}
+
+fn send_init_strean() -> Result<(), ()> {
+    intr_status_enable(HS_MMCSD_SIGEN_CMDCOMP);
+
+    // initialize the init command
+    unsafe {
+        reg32_write_masked(MMC0_BASE, MMC_CON, MMCHS_CON_INIT, MMCHS_CON_INIT);
+        reg32_write(MMC0_BASE, MMC_CMD, 0x0);
+
+        // wait 1ms
+        for _ in 0..1000000 {
+            asm::nop();
+        }
+
+        // set SD_STAT[0] to 0x1
+        reg32_write_masked(MMC0_BASE, MMC_STAT, 0x1, 0x1);
+
+        // let status = is_cmd_complete(0xFFFF);
+        // if !status {
+        //     return Err(());
+        // }
+        reg32_clear_bits(MMC0_BASE, MMC_CON, MMCHS_CON_INIT);
+        intr_status_clear(0xFFFFFFFF);
+        Ok(())
+    }
+}
+
+fn intr_status_enable(flag: u32) {
+    unsafe {
+        reg32_write(MMC0_BASE, MMC_IE, flag);
+    }
+}
+
+fn intr_status_clear(flag: u32) {
+    unsafe {
+        reg32_write(MMC0_BASE, MMC_STAT, flag);
+    }
+}
+
 fn system_config(config: u32) {
     unsafe {
         reg32_write_masked(
@@ -329,6 +569,76 @@ fn set_bus_width() {
         reg32_clear_bits(MMC0_BASE, MMC_CON, 1 << 5);
         reg32_clear_bits(MMC0_BASE, MMC_HCTL, 0x2); // 1 bit bus width
     } //HS_MMCSD_BUS_WIDTH_1BIT
+}
+
+fn set_bus_freq(freq_in: u32, freq_out: u32, bypass: u32) {
+    // enable internal clocks
+    if internal_clock(HS_MMCSD_INTCLOCK_ON).is_err() {
+        panic!("Failed to enable internal clock");
+    }
+    println!("internal clock enabled, done for now");
+    if bypass == 0 {
+        let mut clkd = freq_in / freq_out;
+        clkd = if clkd < 2 { 2 } else { clkd };
+        clkd = if clkd > 1023 { 1023 } else { clkd };
+
+        /* Do not cross the required freq */
+        while ((freq_in / clkd) > freq_out) {
+            if (clkd == 1023) {
+                /* Return when we cannot set the clock freq */
+                panic!("Cannot set the clock freq");
+            }
+
+            clkd += 1;
+        }
+        unsafe {
+            let reg_val = reg32_read_masked(MMC0_BASE, MMC_SYSCTL, !MMC_SYSCTL_CLKD);
+            reg32_write(
+                MMC0_BASE,
+                MMC_SYSCTL,
+                reg_val | (clkd << MMC_SYSCTL_CLKD_SHIFT),
+            );
+
+            if !is_internal_clock_stable(0xFFFFF) {
+                panic!("Failed to set internal clock after setting new divider");
+            }
+
+            reg32_write_masked(MMC0_BASE, MMC_SYSCTL, MMC_SYSCTL_CEN, MMC_SYSCTL_CEN);
+        }
+    }
+}
+
+fn send_cmd(cmd: u32, arg: u32) -> u32 {
+    let cmdr = match cmd {
+        0 => SD_CMDR_NO_RESPONSE,
+        5 => SD_CMDR_SHORT_RESPONSE,
+        8 => SD_CMDR_SHORT_RESPONSE_BUSY,
+        _ => SD_CMDR_NO_RESPONSE,
+    };
+
+    unsafe {
+        // wait if command line is busy
+        while reg32_read_masked(MMC0_BASE, MMC_PSTATE, MMCHS_STAT_CC) != 0x0 {}
+
+        // make sure status is clear
+        reg32_write(MMC0_BASE, MMC_STAT, 0xFFFFFFFF);
+        reg32_write(MMC0_BASE, MMC_ARG, arg);
+        reg32_write(MMC0_BASE, MMC_CMD, (cmd << 24) | cmdr); // CMD load, start command
+
+        // wait for command to complete
+        // while reg32_read_masked(MMC0_BASE, MMC_STAT, MMCHS_STAT_CC) != 0x1 {}
+        if !is_cmd_complete(0xFFFFF) {
+            panic!("Command failed to complete");
+        }
+
+        println!(
+            "Command {} finished, stat reg: {:x}",
+            cmd,
+            reg32_read(MMC0_BASE, MMC_STAT)
+        );
+
+        return reg32_read(MMC0_BASE, MMC_RSP10);
+    }
 }
 
 pub fn mux_pins() {
@@ -412,6 +722,14 @@ pub fn controller_init() {
     println!("about to power on bus");
     set_sd_bus_power(HS_MMCSD_BUS_POWER_ON).expect("Failed to power on SD bus");
     println!("bus powered on");
+
+    // set bus frequency
+    println!("setting bus freq");
+    set_bus_freq(MMCSD_IN_FREQ, MMCSD_INIT_FREQ, 0);
+    println!("bus freq set");
+    println!("sending init stream");
+    send_init_strean().expect("Failed to send init stream");
+    println!("init stream sent, mmc should be ready");
 }
 
 pub fn init() {
@@ -428,4 +746,52 @@ pub fn init() {
     println!("START CONTROLLER_INIT");
     controller_init();
     println!("END CONTROLLER_INIT");
+
+    println!("--------------------------");
+    println!("--------------------------");
+    println!("--------------------------");
+    println!("Sending CMD0");
+    send_cmd(0, 0);
+    println!("CMD0 sent");
+    println!("Sending CMD5");
+    // send_cmd(5, 0);
+    // read status register
+    // let mut reg;
+    // unsafe {
+    //     reg = reg32_read(MMC0_BASE, MMC_STAT);
+    // }
+    // println!(
+    //     "CMD5 sent {}, CC: {}, CTO: {}",
+    //     reg,
+    //     reg & 0x1,
+    //     (reg >> 16) & 0x1
+    // );
+
+    // set SD_SYSCTL[25] to 1 and wait until it resets
+    unsafe {
+        reg32_write_masked(MMC0_BASE, MMC_SYSCTL, 1 << 25, 1 << 25);
+        while reg32_read_masked(MMC0_BASE, MMC_SYSCTL, 1 << 25) == 0 << 25 {} // wait for 1 first
+        while reg32_read_masked(MMC0_BASE, MMC_SYSCTL, 1 << 25) == 1 << 25 {} // wait for 0
+    }
+    println!("I'm done here!");
+
+    // println!("CMD5 sent {}", res);
+    println!("Sending CMD8");
+    let response = send_cmd(8, 0x1AA);
+    println!("CMD8 sent");
+    println!("Response: {}", response);
+    if response & 0xFF != 0xAA {
+        panic!("Card doesn't support 2.7-3.6V");
+    }
+
+    // let retry = 0xFFFFF;
+    // while retry > 0 {
+    //     send_cmd(55, 0);
+    //     let response = send_cmd(41, 0x40FF8000);
+    //     if response & (1 << 31) == 1 {
+    //         break;
+    //     }
+    //     println!("Response: {}", response);
+    //     retry -= 1;
+    // }
 }
