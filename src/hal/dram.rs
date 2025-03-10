@@ -1,19 +1,30 @@
-use crate::println;
+use crate::{panic, println};
 
 pub use platform::{DRAM_END, DRAM_SIZE, DRAM_START};
 
 /// Initialize the DRAM, then run a quick test
 pub fn init() {
-    platform::init(); // Platform-specific initialization
+    platform::init();
     simple_memtest();
 }
 
 fn simple_memtest() {
-    use platform::{DRAM_END, DRAM_SIZE, DRAM_START};
+    #[cfg(feature = "bbb")]
+    simple_memtest_from(DRAM_START, DRAM_END);
+
+    /// On qemu, the bootloader is loaded immediately
+    /// into dram, we do this so we dont overwrite it
+    #[cfg(feature = "qemu")]
+    simple_memtest_from(DRAM_START + 0x20000, DRAM_END);
+}
+
+fn simple_memtest_from(start: usize, end: usize) {
+    let mut errors = 0;
+    let size = end - start;
     unsafe {
         println!(
-            "Starting DRAM test from 0x{:x} to 0x{:x} ({} bytes)",
-            DRAM_START, DRAM_END, DRAM_SIZE
+            "Testing DRAM from 0x{:x} to 0x{:x} ({} bytes)",
+            start, end, size
         );
 
         // Test patterns
@@ -29,29 +40,21 @@ fn simple_memtest() {
         ];
 
         // Number of words to test with each pattern
-        // Testing every 1MB interval to cover the full range without taking too long
-        const STRIDE: usize = 1024 * 1024 / 4; // 1MB in 4-byte words
-        const NUM_TEST_LOCATIONS: usize = DRAM_SIZE / (STRIDE * 4);
+        // Testing every 4KB interval to cover the full range without taking too long
+        const STRIDE: usize = 4096 / 4; // 1MB in 4-byte words
+        let num_test_locations: usize = size / (STRIDE * 4);
 
         for &pattern in patterns.iter() {
-            println!("Testing with pattern: 0x{:x}", pattern);
-            let mut errors = 0;
-
-            // Write pattern
-            println!("Writing pattern...");
-            for i in 0..NUM_TEST_LOCATIONS {
-                let addr = DRAM_START + (i * STRIDE * 4);
+            for i in 0..num_test_locations {
+                let addr = start + (i * STRIDE * 4);
                 let ptr = addr as *mut u32;
 
                 // Write a pattern that is address-dependent to make detection of addressing errors easier
                 let value = pattern ^ (addr as u32);
                 ptr.write_volatile(value);
             }
-
-            // Verify pattern
-            println!("Reading back and verifying...");
-            for i in 0..NUM_TEST_LOCATIONS {
-                let addr = DRAM_START + (i * STRIDE * 4);
+            for i in 0..num_test_locations {
+                let addr = start + (i * STRIDE * 4);
                 let ptr = addr as *mut u32;
 
                 let expected = pattern ^ (addr as u32);
@@ -69,17 +72,11 @@ fn simple_memtest() {
                 }
             }
 
-            if errors == 0 {
-                println!("Pattern 0x{:x} verified successfully!", pattern);
-            } else {
+            if errors > 0 {
                 println!("Pattern 0x{:x} failed with {} errors", pattern, errors);
             }
         }
-
-        // Walking ones test - useful for detecting stuck bits
-        println!("Running walking ones test...");
-        let mut errors = 0;
-        let test_addr = DRAM_START as *mut u32;
+        let test_addr = start as *mut u32;
 
         for bit in 0..32 {
             let pattern = 1u32 << bit;
@@ -95,44 +92,30 @@ fn simple_memtest() {
             }
         }
 
-        if errors == 0 {
-            println!("Walking ones test passed!");
-        } else {
+        if errors > 0 {
             println!("Walking ones test failed with {} errors", errors);
         }
-
-        println!("DRAM test completed");
+    }
+    if errors == 0 {
+        println!("DRAM test passed!");
+    } else {
+        panic!("DRAM test failed with {} errors", errors);
     }
 }
 
 // Platform-specific UART functions
 #[cfg(feature = "qemu")]
 mod platform {
-    pub const DRAM_START: usize = 0x4001_0000; // start offset of the bootloader
-    pub const DRAM_END: usize = 0x5FFF_FFFF;
-    pub const DRAM_SIZE: usize = DRAM_END - DRAM_START + 1;
+    pub use crate::hal::qemu::dram::{DRAM_END, DRAM_SIZE, DRAM_START};
 
+    /// no init needed for qemu, already initialized in dram
     pub fn init() {}
 }
 
 #[cfg(feature = "bbb")]
 mod platform {
-    pub use crate::hal::bbb::dram::{init_ddr_final, init_ddr_phys, init_emif, init_vtp};
-    use crate::{
-        dbg,
-        hal::bbb::{
-            cm::{
-                get_device_version, init_core_pll, init_ddr_pll, init_interface_clk, init_mpu_pll,
-                init_per_pll, init_plls, init_power_domain_transition,
-            },
-            tps::*,
-        },
-        println,
-    };
-
-    pub const DRAM_START: usize = 0x8000_0000;
-    pub const DRAM_END: usize = 0x9FFF_FFFF;
-    pub const DRAM_SIZE: usize = DRAM_END - DRAM_START + 1;
+    pub use crate::hal::bbb::dram::{DRAM_END, DRAM_SIZE, DRAM_START};
+    use crate::hal::bbb::dram::{init_ddr_final, init_ddr_phys, init_emif, init_vtp};
 
     pub fn init() {
         init_emif();

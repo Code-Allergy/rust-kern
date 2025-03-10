@@ -1,10 +1,13 @@
 #![allow(dead_code)]
-use crate::hal::util::*;
-
 use super::{
     cm::*,
     tps::{DEVICE_VERSION_2_0, DEVICE_VERSION_2_1},
 };
+use crate::hal::util::*;
+
+pub const DRAM_START: usize = 0x8000_0000;
+pub const DRAM_END: usize = 0x9FFF_FFFF;
+pub const DRAM_SIZE: usize = DRAM_END - DRAM_START + 1;
 
 pub const DDR_PHY_CTRL_BASE: u32 = CONTROL_MODULE_BASE + 0x2000;
 

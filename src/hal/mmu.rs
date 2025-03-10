@@ -1,6 +1,6 @@
 use crate::panic;
 
-use super::asm;
+use super::{asm, dram};
 use core::cell::UnsafeCell;
 use core::fmt;
 use core::mem::size_of;
@@ -12,10 +12,22 @@ const VIRT_DRAM_END: u32 = 0x9FFF_FFFF;
 const SECTION_ADDR_MASK: u32 = 0xFFF0_0000;
 
 const L1_SECTION_DESCRIPTOR: u32 = 0b10;
+const L1_PAGE_DESCRIPTOR: u32 = 0b01;
 
 // Raw permission bits, needs to be shifted into place
+const RAW_AP_NO_NO: u32 = 0b00;
+const RAW_AP_RW_NO: u32 = 0b01;
+const RAW_AP_RW_RO: u32 = 0b10;
 const RAW_AP_RW_RW: u32 = 0b11;
-const RAW_AP2_RW_RW: u32 = 0;
+
+const RAW_AP2_0: u32 = 0;
+const RAW_AP2_1: u32 = 1;
+
+// Raw tex bits, needs to be shifted into place
+const RAW_TEX_XN: u32 = 0b000;
+const RAW_TEX_XR: u32 = 0b001;
+const RAW_TEX_XRW: u32 = 0b010;
+const RAW_TEX_XRWB: u32 = 0b011;
 
 const L1_AP_SHIFT: u32 = 10;
 const L1_AP2_SHIFT: u32 = 15;
@@ -23,12 +35,28 @@ const L1_AP2_SHIFT: u32 = 15;
 const L2_AP_SHIFT: u32 = 4;
 const L2_AP2_SHIFT: u32 = 9;
 
-/// L1 AP bits for read/write access for KERN/USR
-pub const L1_ACCESS_RW_RW: u32 = (RAW_AP_RW_RW << L1_AP_SHIFT) | (RAW_AP2_RW_RW << L1_AP2_SHIFT);
+pub const L1_SHAREABLE: u32 = 1 << 16;
+pub const L1_CACHEABLE: u32 = 1 << 3;
+pub const L1_NOT_GLOBAL: u32 = 1 << 17;
+pub const L1_GLOBAL: u32 = 0 << 17;
+pub const L1_NON_SECURE: u32 = 1 << 19;
 
-// #define MMU_SECTION_DESCRIPTOR (2 << 0)  // Section descriptor (b10)
-// #define MMU_PAGE_DESCRIPTOR   (1 << 0)   // Page descriptor (b01)
-// #define MMU_INVALID          (0 << 0)    // Invalid descriptor (b00)
+pub const L1_ACCESS_NX: u32 = 1 << 4;
+pub const L1_ACCESS_X: u32 = 0 << 4;
+
+/// L1 AP bits for read/write access for KERN_USR
+pub const L1_ACCESS_NO_NO: u32 = (RAW_AP_NO_NO << L1_AP_SHIFT) | (RAW_AP2_0 << L1_AP2_SHIFT);
+pub const L1_ACCESS_RW_NO: u32 = (RAW_AP_RW_NO << L1_AP_SHIFT) | (RAW_AP2_0 << L1_AP2_SHIFT);
+pub const L1_ACCESS_RW_RO: u32 = (RAW_AP_RW_RO << L1_AP_SHIFT) | (RAW_AP2_0 << L1_AP2_SHIFT);
+pub const L1_ACCESS_RW_RW: u32 = (RAW_AP_RW_RW << L1_AP_SHIFT) | (RAW_AP2_0 << L1_AP2_SHIFT);
+pub const L1_ACCESS_RO_NO: u32 = (RAW_AP_RW_NO << L1_AP_SHIFT) | (RAW_AP2_1 << L1_AP2_SHIFT);
+pub const L1_ACCESS_RO_RO: u32 = (RAW_AP_RW_RW << L1_AP_SHIFT) | (RAW_AP2_1 << L1_AP2_SHIFT);
+
+pub const L1_KERNEL_CODE_FLAGS: u32 =
+    L1_ACCESS_RO_NO | L1_ACCESS_X | L1_SHAREABLE | L1_CACHEABLE | L1_GLOBAL;
+
+pub const L1_KERNEL_DATA_FLAGS: u32 =
+    L1_ACCESS_RW_NO | L1_ACCESS_NX | L1_SHAREABLE | L1_CACHEABLE | L1_GLOBAL;
 
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -128,9 +156,17 @@ pub fn clear_boot_tables() {
 
 pub fn init() {
     clear_boot_tables();
-    // Map the first 1MB of DRAM to the first 1MB of virtual memory
-    // let tables = get_boot_tables();
     set_domains();
+
+    // for now, map everything, no caching
+    let tables = get_boot_tables();
+    for (i, entry) in tables.iter_mut().enumerate() {
+        entry.map_section(i as u32 * 0x100000, L1_ACCESS_RW_RW);
+    }
+
+    // for now, map the first 1MB of kernel space to dram
+    let first_page = get_boot_entry_at_virt(0xA0000000);
+    first_page.map_section(dram::DRAM_START as u32, L1_KERNEL_DATA_FLAGS);
 }
 
 pub fn enable() {
@@ -145,7 +181,33 @@ pub fn enable() {
     }
 }
 
+pub fn disable() {
+    unsafe {
+        asm::mmu_disable();
+        asm::d_cache_disable();
+        asm::i_cache_disable();
+    }
+}
+
+/// for now, just enables domain 0 to client
 pub fn set_domains() {
-    // for now, just enable domain 0 to client
-    asm::set_dacr(0x1);
+    unsafe {
+        asm::set_dacr(0x1);
+    }
+}
+
+pub fn test_kernel_entry() {
+    unsafe {
+        let test_value = 0xDEADBEEF;
+        let test_addr = 0xA0000000 as *mut u32;
+        test_addr.write_volatile(test_value);
+        let read_value = test_addr.read_volatile();
+        if read_value != test_value {
+            panic!(
+                "Kernel entry test failed: expected 0x{:x}, got 0x{:x}",
+                test_value, read_value
+            );
+        }
+        println!("Kernel entry test: OK");
+    }
 }

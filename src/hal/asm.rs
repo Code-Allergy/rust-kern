@@ -1,18 +1,16 @@
 use core::arch::asm;
 
-pub fn get_dacr() -> u32 {
+pub unsafe fn get_dacr() -> u32 {
     let dacr: u32;
-    unsafe {
-        asm!(
-            "mrc p15, 0, {dacr}, c3, c0, 0",
-            dacr = out(reg) dacr,
-            options(nomem, nostack, preserves_flags)
-        );
-    }
+    asm!(
+        "mrc p15, 0, {dacr}, c3, c0, 0",
+        dacr = out(reg) dacr,
+        options(nomem, nostack, preserves_flags)
+    );
     dacr
 }
 
-pub fn set_dacr(dacr: u32) {
+pub unsafe fn set_dacr(dacr: u32) {
     unsafe {
         asm!(
             "mcr p15, 0, {dacr}, c3, c0, 0",
@@ -22,25 +20,25 @@ pub fn set_dacr(dacr: u32) {
     }
 }
 
-pub fn wfi() {
+pub unsafe fn wfi() {
     unsafe {
         asm!("wfi", options(nomem, nostack, preserves_flags));
     }
 }
 
-pub fn dsb() {
+pub unsafe fn dsb() {
     unsafe {
         asm!("dsb", options(nomem, nostack, preserves_flags));
     }
 }
 
-pub fn isb() {
+pub unsafe fn isb() {
     unsafe {
         asm!("isb", options(nomem, nostack, preserves_flags));
     }
 }
 
-pub fn read_ttbr0() -> u32 {
+pub unsafe fn read_ttbr0() -> u32 {
     let ttbr0: u32;
     unsafe {
         asm!(
@@ -52,7 +50,7 @@ pub fn read_ttbr0() -> u32 {
     ttbr0
 }
 
-pub fn set_ttbr0(ttbr0: u32) {
+pub unsafe fn set_ttbr0(ttbr0: u32) {
     unsafe {
         asm!(
             "mcr p15, 0, {ttbr0}, c2, c0, 0",
@@ -62,7 +60,7 @@ pub fn set_ttbr0(ttbr0: u32) {
     }
 }
 
-pub fn read_ttbr1() -> u32 {
+pub unsafe fn read_ttbr1() -> u32 {
     let ttbr1: u32;
     unsafe {
         asm!(
@@ -74,7 +72,7 @@ pub fn read_ttbr1() -> u32 {
     ttbr1
 }
 
-pub fn set_ttbr1(ttbr1: u32) {
+pub unsafe fn set_ttbr1(ttbr1: u32) {
     unsafe {
         asm!(
             "mcr p15, 0, {ttbr1}, c2, c0, 1",
@@ -84,7 +82,7 @@ pub fn set_ttbr1(ttbr1: u32) {
     }
 }
 
-pub fn flush_tlb() {
+pub unsafe fn flush_tlb() {
     unsafe {
         asm!(
             "mcr p15, 0, {0}, c8, c7, 0",
@@ -94,7 +92,7 @@ pub fn flush_tlb() {
     }
 }
 
-pub fn flush_i_cache() {
+pub unsafe fn flush_i_cache() {
     unsafe {
         asm!(
             "mcr p15, 0, {0}, c7, c5, 0",
@@ -119,26 +117,53 @@ unsafe fn set_scltr_flag(flag: u32) {
     );
 }
 
-pub fn mmu_enable() {
+unsafe fn clear_scltr_flag(flag: u32) {
+    let mut control: u32;
+    asm!(
+        "mrc p15, 0, {control}, c1, c0, 0",
+        control = out(reg) control,
+        options(nomem, nostack, preserves_flags)
+    );
+    control &= !0x1;
+    asm!(
+        "mcr p15, 0, {control}, c1, c0, 0",
+        control = in(reg) control,
+        options(nomem, nostack, preserves_flags)
+    );
+}
+
+pub unsafe fn mmu_enable() {
     unsafe {
         set_scltr_flag(0x1);
     }
 }
 
-pub fn mmu_disable() {
+pub unsafe fn mmu_disable() {
     unsafe {
-        set_scltr_flag(0x0);
+        clear_scltr_flag(0x1);
     }
 }
 
-pub fn d_cache_enable() {
+pub unsafe fn d_cache_enable() {
     unsafe {
         set_scltr_flag(0x4);
     }
 }
 
-pub fn i_cache_enable() {
+pub unsafe fn d_cache_disable() {
+    unsafe {
+        clear_scltr_flag(0x4);
+    }
+}
+
+pub unsafe fn i_cache_enable() {
     unsafe {
         set_scltr_flag(0x1000);
+    }
+}
+
+pub unsafe fn i_cache_disable() {
+    unsafe {
+        clear_scltr_flag(0x1000);
     }
 }

@@ -8,6 +8,8 @@ use crate::{dbg, println};
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
     loop {
-        asm::wfi();
+        unsafe {
+            asm::wfi();
+        }
     }
 }

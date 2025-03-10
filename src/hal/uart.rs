@@ -2,7 +2,8 @@ use core::fmt::Write;
 
 /// Initialize the UART device (UART0)
 pub fn init() {
-    platform::init(); // Platform-specific initialization
+    platform::init();
+    println!("UART0 ACTIVE");
 }
 
 pub struct Writer;
