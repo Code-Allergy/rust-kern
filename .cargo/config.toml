@@ -1,8 +1,12 @@
+[alias]
+run = "run --features qemu"
+
 [build]
 target = "armv7a-none-eabi"
 
 [target.armv7a-none-eabi]
 linker = "arm-none-eabi-gcc"
+runner = "sh ./tools/run_qemu.sh"
 rustflags = [
     "-C",
     "target-feature=+v7,+thumb2",

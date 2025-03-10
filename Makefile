@@ -66,7 +66,7 @@ $(BUILD_DIR)/bootloader.bin: $(OUT_ELF) | $(BUILD_DIR)
 
 # This rule builds the ELF file with the appropriate features
 $(OUT_ELF): src/main.rs src/boot.S
-	cargo build --release --features $(FEATURES)
+	cargo build --release --no-default-features --features $(FEATURES)
 
 build-rust: $(OUT_ELF)
 

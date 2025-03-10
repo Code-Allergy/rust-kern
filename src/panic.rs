@@ -6,6 +6,5 @@ use crate::{dbg, println};
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
-    // dbg!(info);
     loop {}
 }

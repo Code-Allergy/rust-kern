@@ -13,6 +13,10 @@ panic = "abort"
 panic = "abort"
 
 [features]
-# default = ["bbb"]
+default = ["qemu"]
 qemu = []
 bbb = []
+
+# use qemu when doing cargo run
+[package.metadata.default-run]
+features = ["qemu"]
