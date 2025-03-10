@@ -5,19 +5,18 @@ edition = "2024"
 
 [dependencies]
 
+[build-dependencies]
+bindgen = "0.71.0"
 
-[profile.dev]
-panic = "abort"
+# [profile.dev]
+# panic = "abort"
 
-[profile.release]
-panic = "abort"
+
+# [profile.release]
+# panic = "abort"
 
 [features]
 default = ["qemu"]
 # default = ["bbb"]
 qemu = []
 bbb = []
-
-# use qemu when doing cargo run
-[package.metadata.default-run]
-features = ["qemu"]

@@ -24,12 +24,14 @@
         pkgs.rustup            # Rustup to install the correct target
         pkgs.parted
         pkgs.qemu
+        pkgs.llvmPackages.libclang # rustbindgen
       ];
 
       shellHook = ''
         rustup target add armv7a-none-eabi
         export CARGO_TARGET_ARMV7A_NONE_EABI_LINKER=arm-none-eabi-gcc
         export RUSTFLAGS="-C linker=arm-none-eabi-gcc"
+        export LIBCLANG_PATH="${pkgs.llvmPackages.libclang.lib}/lib"
         echo "Rust nightly with ARMv7a-none-eabi cross-compilation setup."
       '';
     };

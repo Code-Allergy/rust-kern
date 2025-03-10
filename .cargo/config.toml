@@ -5,8 +5,8 @@ run = "run --features qemu"
 target = "armv7a-none-eabi"
 
 [target.armv7a-none-eabi]
-linker = "arm-none-eabi-gcc"
-runner = "sh ./tools/run_qemu.sh"
+# linker = "arm-none-eabi-gcc"
+# runner = "sh ./tools/run_qemu.sh"
 rustflags = [
     "-C",
     "target-feature=+v7,+thumb2",
@@ -14,6 +14,6 @@ rustflags = [
     "link-arg=-Tlinker.ld",
     "-C",
     "link-arg=-nostartfiles",
-    "-C",
-    "link-arg=-nostdlib",
+    # "-C",
+    # "link-arg=-nostdlib",
 ]

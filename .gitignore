@@ -1,4 +1,7 @@
 /target
 .direnv/
 
+libfat32/*.o
+libfat32/*.a
+
 qemu.log

@@ -1,5 +1,6 @@
 use std::env;
 use std::path::Path;
+use std::path::PathBuf;
 use std::process::Command;
 
 fn main() {
@@ -65,9 +66,35 @@ fn main() {
         panic!("Creating library failed with status: {}", status);
     }
 
+    // build fat32 library (C)
+    let status = Command::new("make")
+        .current_dir("libfat32")
+        .status()
+        .expect("Failed to build libfat32");
+    if !status.success() {
+        panic!("Building libfat32 failed with status: {}", status);
+    }
+
     // Tell cargo where to find our library
     println!("cargo:rustc-link-search=native={}", out_dir);
     println!("cargo:rustc-link-lib=static=boot");
+
+    // add the fat32 library
+    println!("cargo:rustc-link-search=native=libfat32");
+    println!("cargo:rustc-link-lib=static=fat32");
+
+    // create bindings for the fat32 library
+
+    let bindings = bindgen::Builder::default()
+        .header("libfat32/wrapper.h")
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
+        .use_core()
+        .generate()
+        .expect("Unable to generate bindings");
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+    bindings
+        .write_to_file(out_path.join("bindings.rs"))
+        .expect("Couldn't write bindings!");
 
     // Force inclusion of __init symbol
     println!("cargo:rustc-link-arg=-u__init");
