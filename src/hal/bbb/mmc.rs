@@ -387,6 +387,10 @@ pub const SD_CMDR_LONG_RESPONSE: u32 = 1 << 16;
 pub const SD_CMDR_SHORT_RESPONSE: u32 = 1 << 17;
 pub const SD_CMDR_SHORT_RESPONSE_BUSY: u32 = 3 << 16;
 
+pub const SD_CMDR_DATA_PRESENT: u32 = 1 << 21;
+pub const SD_CMDR_WRITE: u32 = 0 << 4;
+pub const SD_CMDR_READ: u32 = 1 << 4;
+
 use super::regs::{
     base::{CM_PER_BASE, CONTROL_MODULE_BASE},
     cm::CM_PER_MMC0_CLKCTRL,
@@ -608,11 +612,15 @@ fn set_bus_freq(freq_in: u32, freq_out: u32, bypass: u32) {
     }
 }
 
-fn send_cmd(cmd: u32, arg: u32) -> u32 {
+fn send_cmd(cmd: u32, arg: u32, resp: &mut [u32; 4]) {
     let cmdr = match cmd {
         0 => SD_CMDR_NO_RESPONSE,
-        5 => SD_CMDR_SHORT_RESPONSE,
+        2 => SD_CMDR_LONG_RESPONSE,
+        3 => SD_CMDR_SHORT_RESPONSE,
+        9 => SD_CMDR_LONG_RESPONSE,
         8 => SD_CMDR_SHORT_RESPONSE_BUSY,
+        16 => SD_CMDR_NO_RESPONSE,
+        17 => SD_CMDR_NO_RESPONSE | SD_CMDR_DATA_PRESENT | SD_CMDR_READ | (1 << 20) | (1 << 19),
         55 => SD_CMDR_SHORT_RESPONSE,
         41 => SD_CMDR_SHORT_RESPONSE,
         _ => SD_CMDR_NO_RESPONSE,
@@ -630,7 +638,7 @@ fn send_cmd(cmd: u32, arg: u32) -> u32 {
         // wait for command to complete
         // while reg32_read_masked(MMC0_BASE, MMC_STAT, MMCHS_STAT_CC) != 0x1 {}
         if !is_cmd_complete(0xFFFFF) {
-            panic!("Command failed to complete");
+            panic!("Command failed to complete: CMD{}", cmd);
         }
 
         println!(
@@ -639,7 +647,22 @@ fn send_cmd(cmd: u32, arg: u32) -> u32 {
             reg32_read(MMC0_BASE, MMC_STAT)
         );
 
-        return reg32_read(MMC0_BASE, MMC_RSP10);
+        match cmdr {
+            SD_CMDR_NO_RESPONSE => {}
+            SD_CMDR_SHORT_RESPONSE => {
+                resp[0] = reg32_read(MMC0_BASE, MMC_RSP10);
+            }
+            SD_CMDR_SHORT_RESPONSE_BUSY => {
+                resp[0] = reg32_read(MMC0_BASE, MMC_RSP10);
+            }
+            SD_CMDR_LONG_RESPONSE => {
+                resp[0] = reg32_read(MMC0_BASE, MMC_RSP10);
+                resp[1] = reg32_read(MMC0_BASE, MMC_RSP32);
+                resp[2] = reg32_read(MMC0_BASE, MMC_RSP54);
+                resp[3] = reg32_read(MMC0_BASE, MMC_RSP76);
+            }
+            _ => {}
+        }
     }
 }
 
@@ -734,6 +757,73 @@ pub fn controller_init() {
     println!("init stream sent, mmc should be ready");
 }
 
+pub fn read_sector(sector: u32, buffer: &mut [u8; 512]) {
+    let mut response = [0; 4];
+
+    unsafe {
+        reg32_write(MMC0_BASE, MMC_BLK, (1 << 16) | 0x200); // set block size to 512 bytes
+    }
+
+    send_cmd(16, 512, &mut response);
+    send_cmd(17, sector, &mut response);
+
+    // Wait for data ready
+    unsafe {
+        let mut stat;
+        let mut pstat;
+        let mut timeout = 1000000;
+        loop {
+            stat = reg32_read(MMC0_BASE, MMC_STAT);
+            pstat = reg32_read(MMC0_BASE, MMC_PSTATE);
+            if (stat & (1 << 5)) != 0 {
+                // Check BRR (Buffer Read Ready) bit
+                break;
+            }
+
+            // check if read transfer is complete
+            println!("stat: {:x}, pstat: {:x}", stat, pstat);
+
+            // Check for data timeout
+            if (stat & (1 << 20)) != 0 {
+                println!("Data timeout error!");
+                return;
+            }
+
+            // Check for other errors
+            if (stat & 0x78000) != 0 {
+                println!("Data error: 0x{:x}", stat);
+                return;
+            }
+
+            timeout -= 1;
+            if timeout == 0 {
+                println!("Timeout waiting for BRR bit, status: 0x{:x}", stat);
+                return;
+            }
+        }
+    }
+
+    // Read data
+    for i in 0..128 {
+        // Read 128 32-bit words (512 bytes)
+        let word = unsafe { reg32_read(MMC0_BASE, MMC_DATA) };
+        buffer[i * 4] = (word & 0xFF) as u8;
+        buffer[i * 4 + 1] = ((word >> 8) & 0xFF) as u8;
+        buffer[i * 4 + 2] = ((word >> 16) & 0xFF) as u8;
+        buffer[i * 4 + 3] = ((word >> 24) & 0xFF) as u8;
+    }
+
+    // Clear status bits and disable data transfer
+    unsafe {
+        reg32_write(MMC0_BASE, MMC_STAT, 0xFFFFFFFF);
+        reg32_write(
+            MMC0_BASE,
+            MMC_CON,
+            reg32_read(MMC0_BASE, MMC_CON) & !(1 << 1),
+        );
+    }
+}
+
 pub fn init() {
     println!("--------------------------");
     println!("--------------------------");
@@ -753,7 +843,8 @@ pub fn init() {
     println!("--------------------------");
     println!("--------------------------");
     println!("Sending CMD0");
-    send_cmd(0, 0);
+    let mut response = [0; 4];
+    send_cmd(0, 0, &mut response);
     println!("CMD0 sent");
     println!("Sending CMD5");
     // send_cmd(5, 0);
@@ -779,21 +870,48 @@ pub fn init() {
 
     // println!("CMD5 sent {}", res);
     println!("Sending CMD8");
-    let response = send_cmd(8, 0x1AA);
+    send_cmd(8, 0x1AA, &mut response);
     println!("CMD8 sent");
-    println!("Response: {}", response);
-    if response & 0xFF != 0xAA {
+    println!("Response: {}", response[0]);
+    if response[0] & 0xFF != 0xAA {
         panic!("Card doesn't support 2.7-3.6V");
     }
 
     let mut retry = 0xFFFFF;
     while retry > 0 {
-        send_cmd(55, 0);
-        let response = send_cmd(41, 0x40FF8000);
-        if response & (1 << 31) == (1 << 31) {
+        send_cmd(55, 0, &mut response);
+        send_cmd(41, 0x40FF8000, &mut response);
+        if response[0] & (1 << 31) == (1 << 31) {
             break;
         }
         retry -= 1;
     }
     println!("Done with ACMD41");
+    // ALL send CID
+    send_cmd(2, 0, &mut response);
+
+    // SEND_RELATIVE_ADDR
+    send_cmd(3, 0, &mut response);
+    let rca = response[0] >> 16 & 0xFFFF;
+    println!("RCA: {}", rca);
+
+    // SELECT_CARD
+    send_cmd(7, rca << 16, &mut response);
+
+    // set clock to 25MHz
+    set_bus_freq(MMCSD_IN_FREQ, 25000000, 0);
+
+    // try and read the first sector
+    let mut buffer = [0; 512];
+    read_sector(0, &mut buffer);
+
+    // check magic number
+    if buffer[510] == 0x55 && buffer[511] == 0xAA {
+        println!("Magic number found!");
+    } else {
+        println!(
+            "Magic number not found!, got {} {} instead",
+            buffer[510], buffer[511]
+        );
+    }
 }
