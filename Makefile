@@ -37,17 +37,20 @@ endif
 qemu:
 	$(MAKE) _do_qemu PLATFORM=qemu
 
-_do_qemu: $(call get_build_dir,qemu)/bootloader.bin
+_do_qemu: $(call get_build_dir,qemu)/bootloader.bin $(OUT_SDIMG)
+	qemu-img resize $(OUT_SDIMG) 128M
 	qemu-system-arm -m 512M -M cubieboard \
 	-cpu cortex-a8 \
 	-serial mon:stdio -nographic \
+	-drive if=sd,format=raw,file=$(OUT_SDIMG) \
 	-kernel $< \
 	-d guest_errors,unimp,int -D qemu.log
 
 qemu-gdb:
 	$(MAKE) _do_qemu_gdb PLATFORM=qemu
 
-_do_qemu_gdb: $(call get_build_dir,qemu)/bootloader.bin
+_do_qemu_gdb: $(call get_build_dir,qemu)/bootloader.bin $(OUT_SDIMG)
+	qemu-img resize $(OUT_SDIMG) 128M
 	qemu-system-arm -m 512M -M cubieboard \
 	-cpu cortex-a8 \
 	-serial mon:stdio -nographic \

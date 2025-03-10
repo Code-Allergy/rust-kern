@@ -4,7 +4,7 @@ pub fn init() {
 
 #[cfg(feature = "qemu")]
 mod platform {
-    pub fn init() {}
+    pub use crate::hal::qemu::mmc::init;
 }
 
 #[cfg(feature = "bbb")]
