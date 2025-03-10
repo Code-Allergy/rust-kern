@@ -1,12 +1,15 @@
+#![allow(dead_code)]
 use core::arch::asm;
 
 pub unsafe fn get_dacr() -> u32 {
     let dacr: u32;
-    asm!(
-        "mrc p15, 0, {dacr}, c3, c0, 0",
-        dacr = out(reg) dacr,
-        options(nomem, nostack, preserves_flags)
-    );
+    unsafe {
+        asm!(
+            "mrc p15, 0, {dacr}, c3, c0, 0",
+            dacr = out(reg) dacr,
+            options(nomem, nostack, preserves_flags)
+        );
+    }
     dacr
 }
 
@@ -103,33 +106,37 @@ pub unsafe fn flush_i_cache() {
 }
 
 unsafe fn set_scltr_flag(flag: u32) {
-    let mut control: u32;
-    asm!(
-        "mrc p15, 0, {control}, c1, c0, 0",
-        control = out(reg) control,
-        options(nomem, nostack, preserves_flags)
-    );
-    control |= 0x1;
-    asm!(
-        "mcr p15, 0, {control}, c1, c0, 0",
-        control = in(reg) control,
-        options(nomem, nostack, preserves_flags)
-    );
+    unsafe {
+        let mut control: u32;
+        asm!(
+            "mrc p15, 0, {control}, c1, c0, 0",
+            control = out(reg) control,
+            options(nomem, nostack, preserves_flags)
+        );
+        control |= flag;
+        asm!(
+            "mcr p15, 0, {control}, c1, c0, 0",
+            control = in(reg) control,
+            options(nomem, nostack, preserves_flags)
+        );
+    }
 }
 
 unsafe fn clear_scltr_flag(flag: u32) {
-    let mut control: u32;
-    asm!(
-        "mrc p15, 0, {control}, c1, c0, 0",
-        control = out(reg) control,
-        options(nomem, nostack, preserves_flags)
-    );
-    control &= !0x1;
-    asm!(
-        "mcr p15, 0, {control}, c1, c0, 0",
-        control = in(reg) control,
-        options(nomem, nostack, preserves_flags)
-    );
+    unsafe {
+        let mut control: u32;
+        asm!(
+            "mrc p15, 0, {control}, c1, c0, 0",
+            control = out(reg) control,
+            options(nomem, nostack, preserves_flags)
+        );
+        control &= !flag;
+        asm!(
+            "mcr p15, 0, {control}, c1, c0, 0",
+            control = in(reg) control,
+            options(nomem, nostack, preserves_flags)
+        );
+    }
 }
 
 pub unsafe fn mmu_enable() {

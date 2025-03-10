@@ -36,6 +36,8 @@ pub unsafe fn reg32_read(base: u32, offset: u32) -> u32 {
 }
 
 pub unsafe fn reg32_clear_bits(base: u32, offset: u32, bits: u32) {
-    let addr = (base + offset) as *mut u32;
-    ptr::write_volatile(addr, ptr::read_volatile(addr) & !bits);
+    unsafe {
+        let addr = (base + offset) as *mut u32;
+        ptr::write_volatile(addr, ptr::read_volatile(addr) & !bits);
+    }
 }

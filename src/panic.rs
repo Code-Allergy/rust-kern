@@ -1,7 +1,7 @@
 use core::panic::PanicInfo;
 
 use crate::hal::asm;
-use crate::{dbg, println};
+use crate::println;
 
 /// Panic handler (required for `no_std`)
 #[panic_handler]

@@ -4,7 +4,7 @@
 mod hal;
 mod panic;
 
-use crate::hal::{asm, ccm, dram, i2c, mmu, uart};
+use crate::hal::{ccm, dram, i2c, mmu, uart};
 
 fn get_boot_entry() -> usize {
     unsafe extern "C" {

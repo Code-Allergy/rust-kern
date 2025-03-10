@@ -1,6 +1,6 @@
-use crate::{panic, println};
+use crate::println;
 
-pub use platform::{DRAM_END, DRAM_SIZE, DRAM_START};
+pub use platform::{DRAM_END, DRAM_START};
 
 /// Initialize the DRAM, then run a quick test
 pub fn init() {
@@ -106,7 +106,7 @@ fn simple_memtest_from(start: usize, end: usize) {
 // Platform-specific UART functions
 #[cfg(feature = "qemu")]
 mod platform {
-    pub use crate::hal::qemu::dram::{DRAM_END, DRAM_SIZE, DRAM_START};
+    pub use crate::hal::qemu::dram::{DRAM_END, DRAM_START};
 
     /// no init needed for qemu, already initialized in dram
     pub fn init() {}
@@ -114,7 +114,7 @@ mod platform {
 
 #[cfg(feature = "bbb")]
 mod platform {
-    pub use crate::hal::bbb::dram::{DRAM_END, DRAM_SIZE, DRAM_START};
+    pub use crate::hal::bbb::dram::{DRAM_END, DRAM_START};
     use crate::hal::bbb::dram::{init_ddr_final, init_ddr_phys, init_emif, init_vtp};
 
     pub fn init() {

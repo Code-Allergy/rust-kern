@@ -1,32 +1,11 @@
-use crate::hal::bbb::cm::*;
+use super::regs::base::{CM_WKUP_BASE, CONTROL_MODULE_BASE, UART0_BASE};
+use super::regs::cm::*;
+use super::regs::uart::*;
 use crate::hal::util::{reg32_read, reg32_read_masked, reg32_write, reg32_write_masked};
-
-const GPIO1_BASE: u32 = 0x4804c000;
-const GPIO_CTRL_OFF: u32 = 0x130;
-const GPIO_OE_OFF: u32 = 0x134;
-const GPIO_SETDATAOUT_OFF: u32 = 0x194;
-const GPIO_CLEARDATAOUT_OFF: u32 = 0x190;
-
-const UART0_BASE: u32 = 0x44E09000;
-
-const UART_THR_OFF: u32 = 0x00;
-const UART_SYSC_OFF: u32 = 0x54;
-const UART_SYSS_OFF: u32 = 0x58;
-const UART_LCR_OFF: u32 = 0x0C;
-const UART_EFR_OFF: u32 = 0x08;
-const UART_MCR_OFF: u32 = 0x10;
-const UART_FCR_OFF: u32 = 0x08;
-const UART_TLR_OFF: u32 = 0x1C;
-const UART_SCR_OFF: u32 = 0x40;
-const UART_MDR1_OFF: u32 = 0x20;
-const UART_IER_UART_OFF: u32 = 0x04;
-const UART_DLL_OFF: u32 = 0x00;
-const UART_DLH_OFF: u32 = 0x04;
-const UART_LSR_UART_OFF: u32 = 0x14;
 
 pub fn init() {
     unsafe {
-        let stop_bit_en = 1;
+        let _stop_bit_en = 1;
         let num_stop_bits = 0;
         let parity_en = 0;
         let parity_type = 0;

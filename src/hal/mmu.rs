@@ -1,5 +1,4 @@
-use crate::panic;
-
+#![allow(dead_code)]
 use super::{asm, dram};
 use core::cell::UnsafeCell;
 use core::fmt;
@@ -71,7 +70,7 @@ impl fmt::Debug for L1PageTableEntry {
         let c = (value >> 3) & 1; // Bit 3: Cacheable
         let xn = (value >> 4) & 1; // Bit 4: eXecute Never (XN)
         let domain = (value >> 5) & 0xF; // Bits 8:5: Domain
-        let imp = (value >> 9) & 1; // Bit 9: Implementation Defined
+        let _imp = (value >> 9) & 1; // Bit 9: Implementation Defined
         let ap = (value >> 10) & 0b11; // Bits 11:10: AP
         let tex = (value >> 12) & 0b111; // Bits 14:12: TEX
         let ap2 = (value >> 15) & 0b1; // Bits 15: AP2
@@ -88,7 +87,7 @@ impl fmt::Debug for L1PageTableEntry {
             _ => "Reserved",
         };
 
-        if (supersection != 0) {
+        if supersection != 0 {
             panic!("Supersection not supported, bit should not be set");
         }
 

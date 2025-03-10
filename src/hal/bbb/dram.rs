@@ -1,7 +1,11 @@
 #![allow(dead_code)]
 use super::{
     cm::*,
-    tps::{DEVICE_VERSION_2_0, DEVICE_VERSION_2_1},
+    regs::{
+        base::{CM_PER_BASE, CONTROL_MODULE_BASE},
+        cm::*,
+        tps::{DEVICE_VERSION_2_0, DEVICE_VERSION_2_1},
+    },
 };
 use crate::hal::util::*;
 

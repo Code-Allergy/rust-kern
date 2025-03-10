@@ -1,3 +1,5 @@
+pub mod regs;
+
 pub mod cm;
 pub mod dram;
 pub mod eeprom;
