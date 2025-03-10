@@ -613,6 +613,8 @@ fn send_cmd(cmd: u32, arg: u32) -> u32 {
         0 => SD_CMDR_NO_RESPONSE,
         5 => SD_CMDR_SHORT_RESPONSE,
         8 => SD_CMDR_SHORT_RESPONSE_BUSY,
+        55 => SD_CMDR_SHORT_RESPONSE,
+        41 => SD_CMDR_SHORT_RESPONSE,
         _ => SD_CMDR_NO_RESPONSE,
     };
 
@@ -784,14 +786,14 @@ pub fn init() {
         panic!("Card doesn't support 2.7-3.6V");
     }
 
-    // let retry = 0xFFFFF;
-    // while retry > 0 {
-    //     send_cmd(55, 0);
-    //     let response = send_cmd(41, 0x40FF8000);
-    //     if response & (1 << 31) == 1 {
-    //         break;
-    //     }
-    //     println!("Response: {}", response);
-    //     retry -= 1;
-    // }
+    let mut retry = 0xFFFFF;
+    while retry > 0 {
+        send_cmd(55, 0);
+        let response = send_cmd(41, 0x40FF8000);
+        if response & (1 << 31) == (1 << 31) {
+            break;
+        }
+        retry -= 1;
+    }
+    println!("Done with ACMD41");
 }
