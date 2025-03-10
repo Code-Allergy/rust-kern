@@ -4,7 +4,7 @@
 mod hal;
 mod panic;
 
-use crate::hal::{ccm, dram, i2c, mmu, uart};
+use crate::hal::{ccm, dram, i2c, mmc, mmu, uart};
 
 fn get_boot_entry() -> usize {
     unsafe extern "C" {
@@ -26,6 +26,7 @@ pub extern "C" fn rust_main() -> ! {
     ccm::init();
     dram::init();
     mmu::init();
+    mmc::init();
 
     println!(
         "Initialization Complete!\nloaded at 0x{:x}",

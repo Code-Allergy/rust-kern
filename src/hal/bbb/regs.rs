@@ -1171,3 +1171,272 @@ pub mod dram {
     pub const CONTROL_SECURE_EMIF_SDRAM_CONFIG: u32 = 0x110;
     pub const CONTROL_SECURE_EMIF_SDRAM_CONFIG_2: u32 = 0x114;
 }
+
+pub mod control {
+    pub const REVISION: u32 = 0x0;
+    pub const HWINFO: u32 = 0x4;
+    pub const SYSCONFIG: u32 = 0x10;
+    pub const STATUS: u32 = 0x40;
+    pub const BOOTSTAT: u32 = 0x44;
+    pub const SEC_CTRL: u32 = 0x100;
+    pub const SEC_SW: u32 = 0x104;
+    pub const SEC_EMU: u32 = 0x108;
+    pub const SECURE_EMIF_SDRAM_CONFIG: u32 = 0x110;
+    pub const SECURE_EMIF_SDRAM_CONFIG_2: u32 = 0x114;
+    pub const SW_CFG: u32 = 0x118;
+    pub const SW_CCFG: u32 = 0x11c;
+    pub const MPK: fn(n: u32) -> u32 = |n| 0x120 + (n * 4);
+    pub const SWRV: fn(n: u32) -> u32 = |n| 0x140 + (n * 4);
+    pub const SEC_TAP: u32 = 0x180;
+    pub const SEC_TAP_CMDIN: u32 = 0x184;
+    pub const SEC_TAP_CMDOUT: u32 = 0x188;
+    pub const SEC_TAP_DATIN: u32 = 0x18c;
+    pub const SEC_TAP_DATOUT: u32 = 0x190;
+    pub const MREQDOMAIN_EXP1: u32 = 0x198;
+    pub const MREQDOMAIN_EXP2: u32 = 0x19c;
+    pub const L3_HW_FW_EXP_VAL_CONF0: u32 = 0x1a0;
+    pub const L3_HW_FW_EXP_VAL_CONF1: u32 = 0x1a4;
+    pub const L4_HW_FW_EXP_VAL_CONF: u32 = 0x1a8;
+    pub const SEC_LOAD_FW_EXP_VAL: u32 = 0x1ac;
+    pub const SEC_CTRL_RO: u32 = 0x1b4;
+    pub const EMIF_OBFUSCATION_KEY: u32 = 0x1b8;
+    pub const SEC_CLK_CTRL: u32 = 0x1bc;
+    pub const MREQDOMAIN_EXP3: u32 = 0x1d4;
+    pub const CEK: fn(n: u32) -> u32 = |n| 0x200 + (n * 4);
+    pub const CEK_BCH: fn(n: u32) -> u32 = |n| 0x210 + (n * 4);
+    pub const MSV_0: u32 = 0x224;
+    pub const MSV_BCH: fn(n: u32) -> u32 = |n| 0x228 + (n * 4);
+    pub const SEC_STATUS: u32 = 0x240;
+    pub const SECMEM_STATUS: u32 = 0x244;
+    pub const SEC_ERR_STAT_FUNC: fn(n: u32) -> u32 = |n| 0x248 + (n * 4);
+    pub const SEC_ERR_STAT_DBUG: fn(n: u32) -> u32 = |n| 0x250 + (n * 4);
+    pub const KEK_SW: fn(n: u32) -> u32 = |n| 0x260 + (n * 4);
+    pub const CMPK_BCH: fn(n: u32) -> u32 = |n| 0x280 + (n * 4);
+    pub const CMPK: fn(n: u32) -> u32 = |n| 0x2b0 + (n * 4);
+    pub const SSM_END_FAST_SECRAM: u32 = 0x300;
+    pub const SSM_FIREWALL_CONTROLLER: u32 = 0x304;
+    pub const SSM_START_SECURE_STACKED_RAM: u32 = 0x308;
+    pub const SSM_END_SECURE_STACKED_RAM: u32 = 0x30c;
+    pub const SSM_START_SPM_STACK: u32 = 0x310;
+    pub const SSM_END_SPM_STACK: u32 = 0x314;
+    pub const SSM_START_MONITOR_RAMCODE: u32 = 0x318;
+    pub const SSM_END_MONITOR_RAMCODE: u32 = 0x31c;
+    pub const SSM_END_MONITOR_RAMDATA: u32 = 0x320;
+    pub const SSM_START_MONITOR_CODE: u32 = 0x324;
+    pub const SSM_END_MONITOR_CODE: u32 = 0x328;
+    pub const SSM_START_MONITOR_PERIPH: u32 = 0x32c;
+    pub const SSM_END_MONITOR_PERIPH: u32 = 0x330;
+    pub const SSM_START_MONITOR_STACK: u32 = 0x334;
+    pub const SSM_END_MONITOR_STACK: u32 = 0x338;
+    pub const SSM_START_MONITOR_RAMCODE_ETM: u32 = 0x33c;
+    pub const SSM_END_MONITOR_RAMCODE_ETM: u32 = 0x340;
+    pub const SSM_END_MONITOR_RAMDATA_ETM: u32 = 0x344;
+    pub const SSM_START_MONITOR_CODE_ETM: u32 = 0x348;
+    pub const SSM_END_MONITOR_CODE_ETM: u32 = 0x34c;
+    pub const SSM_START_MONITOR_STACK_ETM: u32 = 0x350;
+    pub const SSM_END_MONITOR_STACK_ETM: u32 = 0x354;
+    pub const SSM_START_MONITOR_SHARED_ETM: u32 = 0x358;
+    pub const SSM_END_MONITOR_SHARED_ETM: u32 = 0x35c;
+    pub const SSM_START_MONITOR_PERIPH_ETM: u32 = 0x360;
+    pub const SSM_END_MONITOR_PERIPH_ETM: u32 = 0x364;
+    pub const SSM_CPSR_MODE_ENFC: u32 = 0x368;
+    pub const SSM_END_L3_SECRAM: u32 = 0x36c;
+    pub const CORTEX_VBBLDO_CTRL: u32 = 0x41c;
+    pub const CORE_SLDO_CTRL: u32 = 0x428;
+    pub const MPU_SLDO_CTRL: u32 = 0x42c;
+    pub const REFCLK_LJCBLDO_CTRL: u32 = 0x440;
+    pub const CLK32KDIVRATIO_CTRL: u32 = 0x444;
+    pub const BANDGAP_CTRL: u32 = 0x448;
+    pub const BANDGAP_TRIM: u32 = 0x44c;
+    pub const PLL_CLKINPULOW_CTRL: u32 = 0x458;
+    pub const MOSC_CTRL: u32 = 0x468;
+    pub const RCOSC_CTRL: u32 = 0x46c;
+    pub const DEEPSLEEP_CTRL: u32 = 0x470;
+    pub const PE_SCRATCHPAD: fn(n: u32) -> u32 = |n| 0x500 + (n * 4);
+    pub const DEVICE_ID: u32 = 0x600;
+    pub const DEV_FEATURE: u32 = 0x604;
+    pub const INIT_PRIORITY: fn(n: u32) -> u32 = |n| 0x608 + (n * 4);
+    pub const MMU_CFG: u32 = 0x610;
+    pub const TPTC_CFG: u32 = 0x614;
+    pub const OCMC_CFG: u32 = 0x618;
+    pub const USB_CTRL: fn(n: u32) -> u32 = |n| 0x620 + (n * 8);
+    pub const USB_STS: fn(n: u32) -> u32 = |n| 0x624 + (n * 8);
+    pub const MAC_ID_LO: fn(n: u32) -> u32 = |n| 0x630 + (n * 8);
+    pub const MAC_ID_HI: fn(n: u32) -> u32 = |n| 0x634 + (n * 8);
+    pub const DCAN_RAMINIT: u32 = 0x644;
+    pub const USB_WKUP_CTRL: u32 = 0x648;
+    pub const GMII_SEL: u32 = 0x650;
+    pub const PWMSS_CTRL: u32 = 0x664;
+    pub const MREQPRIO: fn(n: u32) -> u32 = |n| 0x670 + (n * 4);
+    pub const HW_EVENT_SEL_GRP: fn(n: u32) -> u32 = |n| 0x690 + (n * 4);
+    pub const SMRT_CTRL: u32 = 0x6a0;
+    pub const SABTOOTH_HW_DEBUG_SEL: u32 = 0x6a4;
+    pub const SABTOOTH_HW_DBG_INFO: u32 = 0x6a8;
+    pub const MRGN_MODE: fn(n: u32) -> u32 = |n| 0x6c0 + (n * 4);
+    pub const VDD_MPU_OPP: fn(n: u32) -> u32 = |n| 0x770 + (n * 4);
+    pub const VDD_MPU_OPP_TURBO: u32 = 0x77c;
+    pub const VDD_CORE_OPP: fn(n: u32) -> u32 = |n| 0x7b8 + (n * 4);
+    pub const BB_SCALE: u32 = 0x7d0;
+    pub const USB_VID_PID: u32 = 0x7f4;
+    pub const EFUSE_SMA: u32 = 0x7fc;
+    pub const CONF_GPMC_AD: fn(n: u32) -> u32 = |n| 0x800 + (n * 4);
+    pub const CONF_GPMC_A: fn(n: u32) -> u32 = |n| 0x840 + (n * 4);
+    pub const CONF_GPMC_WAIT0: u32 = 0x870;
+    pub const CONF_GPMC_WPN: u32 = 0x874;
+    pub const CONF_GPMC_BE1N: u32 = 0x878;
+    pub const CONF_GPMC_CSN: fn(n: u32) -> u32 = |n| 0x87c + (n * 4);
+    pub const CONF_GPMC_CLK: u32 = 0x88c;
+    pub const CONF_GPMC_ADVN_ALE: u32 = 0x890;
+    pub const CONF_GPMC_OEN_REN: u32 = 0x894;
+    pub const CONF_GPMC_WEN: u32 = 0x898;
+    pub const CONF_GPMC_BE0N_CLE: u32 = 0x89c;
+    pub const CONF_LCD_DATA: fn(n: u32) -> u32 = |n| 0x8a0 + (n * 4);
+    pub const CONF_LCD_VSYNC: u32 = 0x8e0;
+    pub const CONF_LCD_HSYNC: u32 = 0x8e4;
+    pub const CONF_LCD_PCLK: u32 = 0x8e8;
+    pub const CONF_LCD_AC_BIAS_EN: u32 = 0x8ec;
+    pub const CONTROL_CONF_MMC0_DAT3: u32 = 0x8f0;
+    pub const CONTROL_CONF_MMC0_DAT2: u32 = 0x8f4;
+    pub const CONTROL_CONF_MMC0_DAT1: u32 = 0x8f8;
+    pub const CONTROL_CONF_MMC0_DAT0: u32 = 0x8fc;
+    pub const CONTROL_CONF_MMC0_CLK: u32 = 0x900;
+    pub const CONTROL_CONF_MMC0_CMD: u32 = 0x904;
+    pub const CONF_MII1_COL: u32 = 0x908;
+    pub const CONF_MII1_CRS: u32 = 0x90c;
+    pub const CONF_MII1_RXERR: u32 = 0x910;
+    pub const CONF_MII1_TXEN: u32 = 0x914;
+    pub const CONF_MII1_RXDV: u32 = 0x918;
+    pub const CONF_MII1_TXD3: u32 = 0x91c;
+    pub const CONF_MII1_TXD2: u32 = 0x920;
+    pub const CONF_MII1_TXD1: u32 = 0x924;
+    pub const CONF_MII1_TXD0: u32 = 0x928;
+    pub const CONF_MII1_TXCLK: u32 = 0x92c;
+    pub const CONF_MII1_RXCLK: u32 = 0x930;
+    pub const CONF_MII1_RXD3: u32 = 0x934;
+    pub const CONF_MII1_RXD2: u32 = 0x938;
+    pub const CONF_MII1_RXD1: u32 = 0x93c;
+    pub const CONF_MII1_RXD0: u32 = 0x940;
+    pub const CONF_RMII1_REFCLK: u32 = 0x944;
+    pub const CONF_MDIO_DATA: u32 = 0x948;
+    pub const CONF_MDIO_CLK: u32 = 0x94c;
+    pub const CONF_SPI0_SCLK: u32 = 0x950;
+    pub const CONF_SPI0_D0: u32 = 0x954;
+    pub const CONF_SPI0_D1: u32 = 0x958;
+    pub const CONF_SPI0_CS0: u32 = 0x95c;
+    pub const CONF_SPI0_CS1: u32 = 0x960;
+    pub const CONF_ECAP0_IN_PWM0_OUT: u32 = 0x964;
+
+    /* CONF_MMC0_DAT3 */
+    pub const CONTROL_CONF_MMC0_DAT3_CONF_MMC0_DAT3_MMODE: u32 = 0x00000007;
+    pub const CONTROL_CONF_MMC0_DAT3_CONF_MMC0_DAT3_MMODE_SHIFT: u32 = 0x00000000;
+
+    pub const CONTROL_CONF_MMC0_DAT3_CONF_MMC0_DAT3_PUDEN: u32 = 0x00000008;
+    pub const CONTROL_CONF_MMC0_DAT3_CONF_MMC0_DAT3_PUDEN_SHIFT: u32 = 0x00000003;
+
+    pub const CONTROL_CONF_MMC0_DAT3_CONF_MMC0_DAT3_PUTYPESEL: u32 = 0x00000010;
+    pub const CONTROL_CONF_MMC0_DAT3_CONF_MMC0_DAT3_PUTYPESEL_SHIFT: u32 = 0x00000004;
+
+    pub const CONTROL_CONF_MMC0_DAT3_CONF_MMC0_DAT3_RSVD: u32 = 0x000FFF80;
+    pub const CONTROL_CONF_MMC0_DAT3_CONF_MMC0_DAT3_RSVD_SHIFT: u32 = 0x00000007;
+
+    pub const CONTROL_CONF_MMC0_DAT3_CONF_MMC0_DAT3_RXACTIVE: u32 = 0x00000020;
+    pub const CONTROL_CONF_MMC0_DAT3_CONF_MMC0_DAT3_RXACTIVE_SHIFT: u32 = 0x00000005;
+
+    pub const CONTROL_CONF_MMC0_DAT3_CONF_MMC0_DAT3_SLEWCTRL: u32 = 0x00000040;
+    pub const CONTROL_CONF_MMC0_DAT3_CONF_MMC0_DAT3_SLEWCTRL_SHIFT: u32 = 0x00000006;
+
+    /* CONF_MMC0_DAT2 */
+    pub const CONTROL_CONF_MMC0_DAT2_CONF_MMC0_DAT2_MMODE: u32 = 0x00000007;
+    pub const CONTROL_CONF_MMC0_DAT2_CONF_MMC0_DAT2_MMODE_SHIFT: u32 = 0x00000000;
+
+    pub const CONTROL_CONF_MMC0_DAT2_CONF_MMC0_DAT2_PUDEN: u32 = 0x00000008;
+    pub const CONTROL_CONF_MMC0_DAT2_CONF_MMC0_DAT2_PUDEN_SHIFT: u32 = 0x00000003;
+
+    pub const CONTROL_CONF_MMC0_DAT2_CONF_MMC0_DAT2_PUTYPESEL: u32 = 0x00000010;
+    pub const CONTROL_CONF_MMC0_DAT2_CONF_MMC0_DAT2_PUTYPESEL_SHIFT: u32 = 0x00000004;
+
+    pub const CONTROL_CONF_MMC0_DAT2_CONF_MMC0_DAT2_RSVD: u32 = 0x000FFF80;
+    pub const CONTROL_CONF_MMC0_DAT2_CONF_MMC0_DAT2_RSVD_SHIFT: u32 = 0x00000007;
+
+    pub const CONTROL_CONF_MMC0_DAT2_CONF_MMC0_DAT2_RXACTIVE: u32 = 0x00000020;
+    pub const CONTROL_CONF_MMC0_DAT2_CONF_MMC0_DAT2_RXACTIVE_SHIFT: u32 = 0x00000005;
+
+    pub const CONTROL_CONF_MMC0_DAT2_CONF_MMC0_DAT2_SLEWCTRL: u32 = 0x00000040;
+    pub const CONTROL_CONF_MMC0_DAT2_CONF_MMC0_DAT2_SLEWCTRL_SHIFT: u32 = 0x00000006;
+
+    /* CONF_MMC0_DAT1 */
+    pub const CONTROL_CONF_MMC0_DAT1_CONF_MMC0_DAT1_MMODE: u32 = 0x00000007;
+    pub const CONTROL_CONF_MMC0_DAT1_CONF_MMC0_DAT1_MMODE_SHIFT: u32 = 0x00000000;
+
+    pub const CONTROL_CONF_MMC0_DAT1_CONF_MMC0_DAT1_PUDEN: u32 = 0x00000008;
+    pub const CONTROL_CONF_MMC0_DAT1_CONF_MMC0_DAT1_PUDEN_SHIFT: u32 = 0x00000003;
+
+    pub const CONTROL_CONF_MMC0_DAT1_CONF_MMC0_DAT1_PUTYPESEL: u32 = 0x00000010;
+    pub const CONTROL_CONF_MMC0_DAT1_CONF_MMC0_DAT1_PUTYPESEL_SHIFT: u32 = 0x00000004;
+
+    pub const CONTROL_CONF_MMC0_DAT1_CONF_MMC0_DAT1_RSVD: u32 = 0x000FFF80;
+    pub const CONTROL_CONF_MMC0_DAT1_CONF_MMC0_DAT1_RSVD_SHIFT: u32 = 0x00000007;
+
+    pub const CONTROL_CONF_MMC0_DAT1_CONF_MMC0_DAT1_RXACTIVE: u32 = 0x00000020;
+    pub const CONTROL_CONF_MMC0_DAT1_CONF_MMC0_DAT1_RXACTIVE_SHIFT: u32 = 0x00000005;
+
+    pub const CONTROL_CONF_MMC0_DAT1_CONF_MMC0_DAT1_SLEWCTRL: u32 = 0x00000040;
+    pub const CONTROL_CONF_MMC0_DAT1_CONF_MMC0_DAT1_SLEWCTRL_SHIFT: u32 = 0x00000006;
+
+    /* CONF_MMC0_DAT0 */
+    pub const CONTROL_CONF_MMC0_DAT0_CONF_MMC0_DAT0_MMODE: u32 = 0x00000007;
+    pub const CONTROL_CONF_MMC0_DAT0_CONF_MMC0_DAT0_MMODE_SHIFT: u32 = 0x00000000;
+
+    pub const CONTROL_CONF_MMC0_DAT0_CONF_MMC0_DAT0_PUDEN: u32 = 0x00000008;
+    pub const CONTROL_CONF_MMC0_DAT0_CONF_MMC0_DAT0_PUDEN_SHIFT: u32 = 0x00000003;
+
+    pub const CONTROL_CONF_MMC0_DAT0_CONF_MMC0_DAT0_PUTYPESEL: u32 = 0x00000010;
+    pub const CONTROL_CONF_MMC0_DAT0_CONF_MMC0_DAT0_PUTYPESEL_SHIFT: u32 = 0x00000004;
+
+    pub const CONTROL_CONF_MMC0_DAT0_CONF_MMC0_DAT0_RSVD: u32 = 0x000FFF80;
+    pub const CONTROL_CONF_MMC0_DAT0_CONF_MMC0_DAT0_RSVD_SHIFT: u32 = 0x00000007;
+
+    pub const CONTROL_CONF_MMC0_DAT0_CONF_MMC0_DAT0_RXACTIVE: u32 = 0x00000020;
+    pub const CONTROL_CONF_MMC0_DAT0_CONF_MMC0_DAT0_RXACTIVE_SHIFT: u32 = 0x00000005;
+
+    pub const CONTROL_CONF_MMC0_DAT0_CONF_MMC0_DAT0_SLEWCTRL: u32 = 0x00000040;
+    pub const CONTROL_CONF_MMC0_DAT0_CONF_MMC0_DAT0_SLEWCTRL_SHIFT: u32 = 0x00000006;
+
+    /* CONF_MMC0_CLK */
+    pub const CONTROL_CONF_MMC0_CLK_CONF_MMC0_CLK_MMODE: u32 = 0x00000007;
+    pub const CONTROL_CONF_MMC0_CLK_CONF_MMC0_CLK_MMODE_SHIFT: u32 = 0x00000000;
+
+    pub const CONTROL_CONF_MMC0_CLK_CONF_MMC0_CLK_PUDEN: u32 = 0x00000008;
+    pub const CONTROL_CONF_MMC0_CLK_CONF_MMC0_CLK_PUDEN_SHIFT: u32 = 0x00000003;
+
+    pub const CONTROL_CONF_MMC0_CLK_CONF_MMC0_CLK_PUTYPESEL: u32 = 0x00000010;
+    pub const CONTROL_CONF_MMC0_CLK_CONF_MMC0_CLK_PUTYPESEL_SHIFT: u32 = 0x00000004;
+
+    pub const CONTROL_CONF_MMC0_CLK_CONF_MMC0_CLK_RSVD: u32 = 0x000FFF80;
+    pub const CONTROL_CONF_MMC0_CLK_CONF_MMC0_CLK_RSVD_SHIFT: u32 = 0x00000007;
+
+    pub const CONTROL_CONF_MMC0_CLK_CONF_MMC0_CLK_RXACTIVE: u32 = 0x00000020;
+    pub const CONTROL_CONF_MMC0_CLK_CONF_MMC0_CLK_RXACTIVE_SHIFT: u32 = 0x00000005;
+
+    pub const CONTROL_CONF_MMC0_CLK_CONF_MMC0_CLK_SLEWCTRL: u32 = 0x00000040;
+    pub const CONTROL_CONF_MMC0_CLK_CONF_MMC0_CLK_SLEWCTRL_SHIFT: u32 = 0x00000006;
+
+    /* CONF_MMC0_CMD */
+    pub const CONTROL_CONF_MMC0_CMD_CONF_MMC0_CMD_MMODE: u32 = 0x00000007;
+    pub const CONTROL_CONF_MMC0_CMD_CONF_MMC0_CMD_MMODE_SHIFT: u32 = 0x00000000;
+
+    pub const CONTROL_CONF_MMC0_CMD_CONF_MMC0_CMD_PUDEN: u32 = 0x00000008;
+    pub const CONTROL_CONF_MMC0_CMD_CONF_MMC0_CMD_PUDEN_SHIFT: u32 = 0x00000003;
+
+    pub const CONTROL_CONF_MMC0_CMD_CONF_MMC0_CMD_PUTYPESEL: u32 = 0x00000010;
+    pub const CONTROL_CONF_MMC0_CMD_CONF_MMC0_CMD_PUTYPESEL_SHIFT: u32 = 0x00000004;
+
+    pub const CONTROL_CONF_MMC0_CMD_CONF_MMC0_CMD_RSVD: u32 = 0x000FFF80;
+    pub const CONTROL_CONF_MMC0_CMD_CONF_MMC0_CMD_RSVD_SHIFT: u32 = 0x00000007;
+
+    pub const CONTROL_CONF_MMC0_CMD_CONF_MMC0_CMD_RXACTIVE: u32 = 0x00000020;
+    pub const CONTROL_CONF_MMC0_CMD_CONF_MMC0_CMD_RXACTIVE_SHIFT: u32 = 0x00000005;
+
+    pub const CONTROL_CONF_MMC0_CMD_CONF_MMC0_CMD_SLEWCTRL: u32 = 0x00000040;
+    pub const CONTROL_CONF_MMC0_CMD_CONF_MMC0_CMD_SLEWCTRL_SHIFT: u32 = 0x00000006;
+}

@@ -10,6 +10,7 @@ pub mod board;
 pub mod ccm;
 pub mod dram;
 pub mod i2c;
+pub mod mmc;
 pub mod mmu;
 pub mod uart;
 
