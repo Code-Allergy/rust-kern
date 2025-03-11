@@ -73,8 +73,12 @@ $(BOOTLOADER_ELF): $(BOOTLOADER_SRC_FILES)
 #
 # KERNEL
 #
-$(KERNEL_BIN):
-	@echo "Hello, world!" > $@
+$(KERNEL_BIN): $(KERNEL_ELF) | $(OUTPUT_DIR)
+	@echo "Creating kernel flat binary from rust build..."
+	@arm-none-eabi-objcopy -O binary $< $@
+
+$(KERNEL_ELF): $(KERNEL_SRC_FILES)
+	CARGO_TARGET_DIR=$(BUILD_DIR) cargo build $(CARGO_FLAGS) -p kernel
 
 $(OUTPUT_DIR):
 	@mkdir -p $@
