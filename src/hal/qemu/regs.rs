@@ -1,5 +1,6 @@
 pub mod base {
     pub const MMC0_BASE: u32 = 0x01C0F000;
+    pub const UART0_BASE: u32 = 0x01C28000;
 }
 
 pub mod mmc {
@@ -65,4 +66,15 @@ pub mod mmc {
     pub const DESC_STATUS_HOLD: u32 = 1 << 31;
     pub const DESC_STATUS_ERROR: u32 = 1 << 30;
     pub const DESC_STATUS_LAST: u32 = 1 << 2;
+}
+
+pub mod uart {
+    pub const RBR_THR_DLL: u32 = 0x00;
+    pub const IER_DLH: u32 = 0x04;
+    pub const IIR_FCR: u32 = 0x08;
+    pub const LCR: u32 = 0x0C;
+    pub const MCR: u32 = 0x10;
+    pub const LSR: u32 = 0x14;
+    pub const MSR: u32 = 0x18;
+    pub const SCR: u32 = 0x1C;
 }

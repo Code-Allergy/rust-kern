@@ -47,7 +47,6 @@ pub extern "C" fn rust_main() -> ! {
 
     mmu::enable();
     mmu::test_kernel_entry();
-    panic!("End of BBB main");
 
     // let mut fat32_fs_t;
     let mut fat32_diskio_t: fat32_diskio_t = fat32_diskio_t {
