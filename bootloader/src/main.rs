@@ -6,8 +6,12 @@
 
 mod panic;
 
+use core::ffi::c_uchar;
 pub use core::ffi::c_void;
-use fat32::{fat32_diskio_t, fat32_file_t, fat32_fs_t, fat32_mount, fat32_open, fat32_read};
+use fat32::{
+    Fat32DiskIO, Fat32Error, Fat32FileSystem,
+    raw::{fat32_diskio_t, fat32_file_t, fat32_fs_t, fat32_mount, fat32_open, fat32_read},
+};
 use hal::{
     ccm, dbg,
     dram::{self, DRAM_START},
@@ -26,28 +30,23 @@ unsafe extern "C" fn read_sector(sector: u32, buffer: *mut u8) -> i32 {
     0
 }
 
-fn copy_kernel_to_phys() {
-    // let mut fat32_fs_t;
-    let mut fat32_diskio_t: fat32_diskio_t = fat32_diskio_t {
-        read_sector: Some(read_sector),
-    };
-    let mut fat32_fs: fat32_fs_t = unsafe { core::mem::zeroed() };
-    let mut fat32_file: fat32_file_t = unsafe { core::mem::zeroed() };
-    unsafe {
-        let filename = "/boot/kernel.bin\0";
-        let filename_ptr = filename.as_ptr();
-        fat32_mount(&mut fat32_fs, &mut fat32_diskio_t);
-        fat32_open(&mut fat32_fs, filename_ptr, &mut fat32_file);
-        dbg!(fat32_file);
-    }
-
-    // copy kernel to start of memory
-    let kernel_size = fat32_file.file_size;
+fn copy_kernel_to_phys() -> Result<(), Fat32Error> {
+    let mut fs = Fat32FileSystem::from_read_fn(read_sector)?;
+    let file = fs
+        .open_file("/boot/kernel.bin\0")
+        .expect("Failed to open kernel.bin");
+    let file_size = file.size();
+    let start_of_memory = DRAM_START as *mut c_uchar;
+    println!("Copying kernel to 0x{:x}", start_of_memory as usize);
+    println!("Kernel size: {}", file_size);
 
     unsafe {
-        let start_of_memory = DRAM_START as *mut c_void;
-        fat32_read(&mut fat32_file, start_of_memory, kernel_size as i32);
+        let memory_slice: &mut [u8] =
+            core::slice::from_raw_parts_mut(start_of_memory, file_size as usize);
+        file.read(memory_slice)
+            .expect("Failed to read file into memory");
     }
+    Ok(())
 }
 
 #[unsafe(no_mangle)]
@@ -106,7 +105,7 @@ pub extern "C" fn rust_main() -> ! {
     );
 
     mmu::enable();
-    copy_kernel_to_phys();
+    copy_kernel_to_phys().expect("Failed to copy kernel to memory");
     load_kernel();
 }
 
