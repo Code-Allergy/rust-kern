@@ -1,3 +1,3 @@
 [workspace]
-members = ["bootloader", "hal"]
+members = ["bootloader", "hal", "libs/fat32"]
 resolver = "3"

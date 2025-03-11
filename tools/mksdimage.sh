@@ -25,8 +25,8 @@ OFFSET=$((START_SECTOR * 512))
 BOOT_IMG="$IMG.boot.img"
 
 # Create disk images
-dd if=/dev/zero of=$IMG bs=1M count=$IMG_SIZE_MB status=progress
-dd if=/dev/zero of=$BOOT_IMG bs=1M count=$BOOT_PART_SIZE_MB status=progress
+dd if=/dev/zero of=$IMG bs=1M count=$IMG_SIZE_MB status=none
+dd if=/dev/zero of=$BOOT_IMG bs=1M count=$BOOT_PART_SIZE_MB status=none
 
 # Partition disk image
 echo "Partitioning $IMG..."
@@ -45,7 +45,7 @@ EOF
 
 # Format boot partition image
 echo "Creating partition image..."
-mkfs.vfat -F 32 $BOOT_IMG
+mkfs.vfat -F 32 $BOOT_IMG > /dev/null
 
 # Create mtools configuration file
 echo "drive c: file=\"$BOOT_IMG\"" > mtools.conf
@@ -64,7 +64,7 @@ mcopy -o $KERNEL c:/boot/kernel.bin
 
 # DD the partition image into the full image
 echo "Writing boot partition to disk image..."
-dd if=$BOOT_IMG of=$IMG seek=$START_SECTOR bs=512 conv=notrunc
+dd if=$BOOT_IMG of=$IMG seek=$START_SECTOR bs=512 conv=notrunc status=none
 
 # Clean up
 rm mtools.conf

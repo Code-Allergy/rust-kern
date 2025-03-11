@@ -1,5 +1,6 @@
-use crate::hal::{
+use crate::{
     asm,
+    mmc::MMCError,
     util::{reg32_clear_bits, reg32_read, reg32_read_masked, reg32_write, reg32_write_masked},
 };
 
@@ -449,7 +450,7 @@ fn set_sd_bus_power(power: u32) -> Result<(), ()> {
     unsafe {
         reg32_write_masked(MMC0_BASE, MMC_HCTL, MMCHS_HCTL_SDBP, power);
 
-        if (power == HS_MMCSD_BUS_POWER_ON) {
+        if power == HS_MMCSD_BUS_POWER_ON {
             while reg32_read_masked(MMC0_BASE, MMC_HCTL, MMCHS_HCTL_SDBP) != HS_MMCSD_BUS_POWER_ON {
                 timeout -= 1;
                 if timeout == 0 {
@@ -468,7 +469,7 @@ fn is_internal_clock_stable(mut retry: u32) -> bool {
         while retry > 0 {
             reg = reg32_read_masked(MMC0_BASE, MMC_SYSCTL, MMC_SYSCTL_ICS) >> MMC_SYSCTL_ICS_SHIFT;
             retry -= 1;
-            if (reg == 1) {
+            if reg == 1 {
                 break;
             }
         }
@@ -552,20 +553,13 @@ fn system_config(config: u32) {
         reg32_write_masked(
             MMC0_BASE,
             MMC_SYSCONFIG,
-            (MMC_SYSCONFIG_STANDBYMODE
+            MMC_SYSCONFIG_STANDBYMODE
                 | MMC_SYSCONFIG_CLOCKACTIVITY
                 | MMC_SYSCONFIG_SIDLEMODE
                 | MMC_SYSCONFIG_ENAWAKEUP
-                | MMC_SYSCONFIG_AUTOIDLE),
+                | MMC_SYSCONFIG_AUTOIDLE,
             config,
         );
-    }
-}
-
-fn bus_power_on() {
-    unsafe {
-        reg32_write_masked(MMC0_BASE, MMC_HCTL, (0b1 << 8), (0x1 << 8));
-        while reg32_read_masked(MMC0_BASE, MMC_HCTL, 0b1 << 8) != (0x1 << 8) {}
     }
 }
 
@@ -589,8 +583,8 @@ fn set_bus_freq(freq_in: u32, freq_out: u32, bypass: u32) {
         println!("CLKD: {}", clkd);
 
         /* Do not cross the required freq */
-        while ((freq_in / clkd) > freq_out) {
-            if (clkd == 1023) {
+        while (freq_in / clkd) > freq_out {
+            if clkd == 1023 {
                 /* Return when we cannot set the clock freq */
                 panic!("Cannot set the clock freq");
             }
@@ -829,7 +823,7 @@ pub fn read_sector(sector: u32, buffer: &mut [u8; 512]) {
     }
 }
 
-pub fn init() {
+pub fn init() -> Result<(), MMCError> {
     println!("--------------------------");
     println!("--------------------------");
     println!("--------------------------");
@@ -919,4 +913,6 @@ pub fn init() {
             buffer[510], buffer[511]
         );
     }
+
+    Ok(())
 }

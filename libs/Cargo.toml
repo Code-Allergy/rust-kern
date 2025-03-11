@@ -1,0 +1,4 @@
+
+[workspace]
+members = ["fat32"]
+resolver = "3"

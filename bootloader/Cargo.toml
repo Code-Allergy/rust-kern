@@ -5,11 +5,12 @@ edition = "2024"
 
 [dependencies]
 hal = { path = "../hal", default-features = false }
-
-[build-dependencies]
-bindgen = "0.71.0"
+fat32 = { path = "../libs/fat32" }
 
 [features]
 default = ["qemu"]
 qemu = ["hal/qemu"]
 bbb = ["hal/bbb"]
+
+[build-dependencies]
+cc = "1.0"

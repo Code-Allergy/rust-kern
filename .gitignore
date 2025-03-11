@@ -7,6 +7,7 @@ qemu.log
 **/.cache
 **/compile_commands.json
 **/target
+**/output.lst
 # Added by cargo
 #
 # already existing elements were commented out

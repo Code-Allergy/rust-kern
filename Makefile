@@ -55,16 +55,17 @@ all: $(OUT_SDCARD)
 #
 ################################################################################################
 $(OUT_SDCARD): $(BOOTLOADER_MLO) $(KERNEL_BIN)
-	$(MAKE_SDCARD_SCRIPT) $(BOOTLOADER_MLO) $@ $(KERNEL_BIN)
+	@$(MAKE_SDCARD_SCRIPT) $(BOOTLOADER_MLO) $@ $(KERNEL_BIN)
 
 #
 # BOOTLOADER
 #
 $(BOOTLOADER_MLO): $(BOOTLOADER_BIN) | $(OUTPUT_DIR)
-	$(MAKE_MLO_SCRIPT) $(MLO_DEST_ADDR) $< $@
+	@$(MAKE_MLO_SCRIPT) $(MLO_DEST_ADDR) $< $@
 
 $(BOOTLOADER_BIN): $(BOOTLOADER_ELF) | $(OUTPUT_DIR)
-	arm-none-eabi-objcopy -O binary $< $@
+	@echo "Creating bootloader flat binary from rust build..."
+	@arm-none-eabi-objcopy -O binary $< $@
 
 $(BOOTLOADER_ELF): $(BOOTLOADER_SRC_FILES)
 	CARGO_TARGET_DIR=$(BUILD_DIR) cargo build $(CARGO_FLAGS) -p bootloader
@@ -73,20 +74,20 @@ $(BOOTLOADER_ELF): $(BOOTLOADER_SRC_FILES)
 # KERNEL
 #
 $(KERNEL_BIN):
-	echo "Hello, world!" > $@
+	@echo "Hello, world!" > $@
 
 $(OUTPUT_DIR):
-	mkdir -p $@
+	@mkdir -p $@
 
 
 #
 # QEMU boot os
 #
 qemu:
-	$(MAKE) _qemu PLATFORM=qemu
+	@$(MAKE) _qemu PLATFORM=qemu
 
 _qemu: $(OUT_SDCARD) $(BOOTLOADER_BIN)
-	qemu-img resize $(OUT_SDCARD) 128M
+	@qemu-img resize $(OUT_SDCARD) 128M
 	qemu-system-arm -m 512M -M cubieboard \
 	-cpu cortex-a8 \
 	-serial mon:stdio -nographic \
@@ -95,13 +96,13 @@ _qemu: $(OUT_SDCARD) $(BOOTLOADER_BIN)
 	-kernel $(BOOTLOADER_BIN)
 
 flash:
-	$(MAKE) _flash PLATFORM=bbb
+	@$(MAKE) _flash PLATFORM=bbb
 
 _flash: $(OUT_SDCARD)
 ifndef DEV
 	$(error DEV is not set)
 endif
-	$(FLASH_BBB_SCRIPT) $(OUT_SDCARD) $(DEV)
+	@$(FLASH_BBB_SCRIPT) $(OUT_SDCARD) $(DEV)
 
 
 clean:

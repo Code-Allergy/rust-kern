@@ -8,7 +8,8 @@ mod panic;
 
 use hal::{ccm, dbg, dram, i2c, mmc, mmu, println, uart};
 
-include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+// include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+use fat32::{fat32_diskio_t, fat32_file_t, fat32_fs_t, fat32_mount, fat32_open};
 
 fn get_boot_entry() -> usize {
     unsafe extern "C" {
@@ -29,7 +30,7 @@ unsafe extern "C" fn read_sector(sector: u32, buffer: *mut u8) -> i32 {
     }
 
     let buffer_slice: &mut [u8; 512] = unsafe { &mut *(buffer as *mut [u8; 512]) };
-    hal::mmc::read_sector(sector, buffer_slice);
+    hal::mmc::read_sector(sector, buffer_slice).expect("Failed to read sector");
     0
 }
 
@@ -42,8 +43,9 @@ pub extern "C" fn rust_main() -> ! {
     mmu::init();
 
     #[cfg(feature = "bbb")]
-    panic!("End of rust_main for BBB, need mmc reads");
-    mmc::init();
+    todo!("End of rust_main for BBB, need mmc reads");
+    #[allow(unreachable_code)]
+    mmc::init().expect("Failed to initialize MMC");
 
     println!(
         "Initialization Complete!\nloaded at 0x{:x}",

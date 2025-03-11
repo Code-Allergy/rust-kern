@@ -13,6 +13,8 @@ if [[ ! -f "$IMAGE_FILE" ]]; then
     exit 1
 fi
 
+echo "Flashing $IMAGE_FILE to $SD_DEVICE"
+
 # Make sure device size is  around 8gb to prevent people from accidentally overwriting their hard drive
 
 DEVICE_SIZE=$(blockdev --getsize64 "$SD_DEVICE")

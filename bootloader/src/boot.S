@@ -15,11 +15,6 @@
 .global __init
 .section .init
 __init:
-
-	/* https://developer.arm.com/documentation/dui0489/c/arm-and-thumb-instructions/miscellaneous-instructions/cps */
-	/* cps (change processor state) id (interrupt / abort disable) */
-	/* cpsid aif, #MODE_System	/* disable : imprecise aborts, irq interrupt, fiq interrupt. Enter mode #MODE_System */
-
 	/* Set up stacks for different CPU modes */
 	/* Enter IRQ mode */
 	ldr r0, =__StackStart
@@ -66,9 +61,6 @@ __init:
 	mrc p15, 0, r0, c1, c0, 1
 	orr r0, r0, #0b10
 	mcr p15, 0, r0, c1, c0, 1 /* auxiliary control reg */
-
-
-	/* cpsie	aif			/* reenable all interrupts */
 
 	bl	rust_main
 
