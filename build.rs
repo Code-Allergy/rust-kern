@@ -13,6 +13,9 @@ const KERNEL_IMG: &str = "test.txt";
 const BOOTLOADER_MLO: &str = "bootloader/target/deploy/MLO";
 
 fn build_disk_img() {
+    println!("cargo:rerun-if-changed=bootloader/Cargo.toml");
+    println!("cargo:rerun-if-changed=bootloader/src");
+
     let out_dir = PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR not set"));
     let out_file = out_dir.join(OUTPUT_IMAGE);
 
@@ -102,7 +105,7 @@ fn build_disk_img() {
     // Clean up
     std::fs::remove_file("mtools.conf").ok();
     std::fs::remove_file(&format!("{}.boot", out_file.to_str().unwrap())).ok();
-
+    panic!("Done");
     eprintln!("Disk image created successfully at {}", OUTPUT_IMAGE);
 }
 

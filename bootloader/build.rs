@@ -18,7 +18,7 @@ fn main() {
     if is_bbb {
         println!("cargo:rustc-cfg=feature=\"bbb\"");
         println!("Building for BeagleBone Black...");
-        println!("cargo:rustc-link-arg=-Tlinker_bbb.ld");
+        println!("cargo:rustc-link-arg=-T{}/linker_bbb.ld", manifest_dir);
     } else if is_qemu {
         println!("cargo:rustc-cfg=feature=\"qemu\"");
         println!("Building for QEMU...");
@@ -29,7 +29,6 @@ fn main() {
     }
 
     println!("cargo:rerun-if-changed=src/boot.S");
-
     // Get output directory from cargo
     let out_dir = env::var("OUT_DIR").expect("Failed to get OUT_DIR");
 

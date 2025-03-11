@@ -55,7 +55,7 @@ pub extern "C" fn rust_main() -> ! {
     let mut fat32_fs_t: fat32_fs_t = unsafe { core::mem::zeroed() };
     let mut fat32_file_t: fat32_file_t = unsafe { core::mem::zeroed() };
     unsafe {
-        let filename = "MLO\0";
+        let filename = "/boot/kernel.bin\0";
         let filename_ptr = filename.as_ptr();
         fat32_mount(&mut fat32_fs_t, &mut fat32_diskio_t);
         fat32_open(&mut fat32_fs_t, filename_ptr, &mut fat32_file_t);

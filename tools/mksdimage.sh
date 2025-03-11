@@ -30,7 +30,7 @@ dd if=/dev/zero of=$BOOT_IMG bs=1M count=$BOOT_PART_SIZE_MB status=progress
 
 # Partition disk image
 echo "Partitioning $IMG..."
-fdisk $IMG <<EOF
+fdisk $IMG <<EOF > /dev/null 2>&1
 o
 n
 p
@@ -55,9 +55,12 @@ export MTOOLSRC="$(pwd)/mtools.conf"
 echo "Copying MLO to boot partition..."
 mcopy -o $MLO c:/MLO
 
+echo "Creating boot directory..."
+mmd -i $BOOT_IMG ::/boot
+
 # Copy kernel image to boot partition image
 echo "Copying kernel image to boot partition..."
-mcopy -o kernel/target/deploy/Image c:/Image
+mcopy -o $KERNEL c:/boot/kernel.bin
 
 # DD the partition image into the full image
 echo "Writing boot partition to disk image..."

@@ -1,5 +1,5 @@
 [alias]
-run = "run --features qemu"
+flash = "./tools/flash_bbb.sh"
 
 [build]
 target = "armv7a-none-eabi"

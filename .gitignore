@@ -1,6 +1,8 @@
 /target
-.direnv/
+/deploy
+/.direnv
 
+qemu.log
 
 # Added by cargo
 #
