@@ -14,3 +14,8 @@ bbb = ["hal/bbb"]
 
 [build-dependencies]
 cc = "1.0"
+
+
+[lib]
+name = "bootloader_types"
+path = "src/lib.rs"       # This points to your lib.rs file

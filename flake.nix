@@ -6,7 +6,8 @@
     rust-overlay.url = "github:oxalica/rust-overlay";
   };
 
-  outputs = { self, nixpkgs, rust-overlay }: let
+  outputs = { self, nixpkgs, rust-overlay }:
+  let
     system = "x86_64-linux";
     overlays = [ (import rust-overlay) ];
     pkgs = import nixpkgs { inherit system overlays; };
@@ -15,6 +16,7 @@
       targets = [ "armv7a-none-eabi" ]; # Pre-installs the Rust target
     });
   in {
+    packages.${system}.default = self; # use self
     devShells.${system}.default = pkgs.mkShell {
       buildInputs = [
         rust

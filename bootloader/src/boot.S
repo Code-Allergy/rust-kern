@@ -12,9 +12,9 @@
 
 #define STACK_SIZE 0x1000 /* 4KB */
 
-.global __init
+.global _init
 .section .init
-__init:
+_init:
 	/* Set up stacks for different CPU modes */
 	/* Enter IRQ mode */
 	ldr r0, =__StackStart

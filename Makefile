@@ -39,11 +39,18 @@ KERNEL_ELF = $(RUST_BUILD_DIR)/kernel
 KERNEL_BIN = $(OUTPUT_DIR)/kernel.bin
 
 # Bootloader sources
-BOOTLOADER_SRC_DIR = bootloader
+BOOTLOADER_SRC_DIR = bootloader/src
 BOOTLOADER_RS_FILES = $(shell find $(BOOTLOADER_SRC_DIR) -type f -name "*.rs")
 BOOTLOADER_C_FILES = $(shell find $(BOOTLOADER_SRC_DIR) -type f -name "*.c")
 BOOTLOADER_ASM_FILES = $(shell find $(BOOTLOADER_SRC_DIR) -type f -name "*.S")
 BOOTLOADER_SRC_FILES = $(BOOTLOADER_RS_FILES) $(BOOTLOADER_C_FILES) $(BOOTLOADER_ASM_FILES)
+
+# Kernel sources
+KERNEL_SRC_DIR = kernel/src
+KERNEL_RS_FILES = $(shell find $(KERNEL_SRC_DIR) -type f -name "*.rs")
+KERNEL_C_FILES = $(shell find $(KERNEL_SRC_DIR) -type f -name "*.c")
+KERNEL_ASM_FILES = $(shell find $(KERNEL_SRC_DIR) -type f -name "*.S")
+KERNEL_SRC_FILES = $(KERNEL_RS_FILES) $(KERNEL_C_FILES) $(KERNEL_ASM_FILES)
 
 .PHONY: all clean bootloader qemu
 
@@ -98,6 +105,18 @@ _qemu: $(OUT_SDCARD) $(BOOTLOADER_BIN)
 	-drive if=sd,format=raw,file=$(OUT_SDCARD) \
 	-d guest_errors,unimp,int -D qemu.log \
 	-kernel $(BOOTLOADER_BIN)
+
+qemu_gdb:
+	@$(MAKE) _qemu_gdb PLATFORM=qemu
+
+_qemu_gdb: $(OUT_SDCARD) $(BOOTLOADER_BIN)
+	@qemu-img resize $(OUT_SDCARD) 128M
+	qemu-system-arm -m 512M -M cubieboard \
+	-cpu cortex-a8 \
+	-serial mon:stdio -nographic \
+	-drive if=sd,format=raw,file=$(OUT_SDCARD) \
+	-d guest_errors,unimp,int \
+	-kernel $(BOOTLOADER_BIN) -s -S
 
 flash:
 	@$(MAKE) _flash PLATFORM=bbb

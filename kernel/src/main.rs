@@ -4,8 +4,14 @@
 #![cfg_attr(test, test_runner(crate::test_runner))]
 #![cfg_attr(test, reexport_test_harness_main = "test_main")]
 
+use bootloader_types::BootInfoHeader;
+use hal::{dbg, println};
+
 #[unsafe(no_mangle)]
-pub extern "C" fn rust_main() -> ! {
+pub extern "C" fn _start(info: &mut BootInfoHeader) -> ! {
+    println!("Hello, world!");
+    println!("This is aasdfasdf test, sizeasdfs: {:x}", info.boot_size);
+    dbg!(info);
     loop {}
 }
 
@@ -29,7 +35,6 @@ fn test_panic(_info: &PanicInfo) -> ! {
 #[cfg(not(test))]
 mod panic_handler {
     use core::panic::PanicInfo;
-
     /// Panic handler (required for `no_std`)
     #[panic_handler]
     fn panic(_info: &PanicInfo) -> ! {

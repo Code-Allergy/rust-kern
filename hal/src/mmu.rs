@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use super::{asm, dram};
+use super::asm;
 use core::cell::UnsafeCell;
 use core::fmt;
 use core::mem::size_of;
@@ -162,10 +162,6 @@ pub fn init() {
     for (i, entry) in tables.iter_mut().enumerate() {
         entry.map_section(i as u32 * 0x100000, L1_ACCESS_RW_RW);
     }
-
-    // for now, map the first 1MB of kernel space to dram
-    let first_page = get_boot_entry_at_virt(0xA0000000);
-    first_page.map_section(dram::DRAM_START as u32, L1_KERNEL_DATA_FLAGS);
 }
 
 pub fn enable() {
@@ -192,21 +188,5 @@ pub fn disable() {
 pub fn set_domains() {
     unsafe {
         asm::set_dacr(0x1);
-    }
-}
-
-pub fn test_kernel_entry() {
-    unsafe {
-        let test_value = 0xDEADBEEF;
-        let test_addr = 0xA0000000 as *mut u32;
-        test_addr.write_volatile(test_value);
-        let read_value = test_addr.read_volatile();
-        if read_value != test_value {
-            panic!(
-                "Kernel entry test failed: expected 0x{:x}, got 0x{:x}",
-                test_value, read_value
-            );
-        }
-        println!("Kernel entry test: OK");
     }
 }

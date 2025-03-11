@@ -32,6 +32,14 @@ impl Platform {
         println!("cargo:rustc-link-arg=-T{}/{}", manifest_dir, ld_script);
     }
 
+    fn set_kernel_entry_addr(&self) {
+        println!("cargo:rerun-if-env-changed=KERNEL_ENTRY");
+        println!(
+            "cargo:rustc-env=KERNEL_ENTRY={}",
+            std::env::var("KERNEL_ENTRY").unwrap_or("0xA0000000".into())
+        );
+    }
+
     fn set_features(&self) {
         match self {
             Platform::BBB => {
@@ -72,6 +80,11 @@ fn main() {
     let platform = Platform::from_env();
     platform.set_features();
     platform.set_ld_script();
+    platform.set_kernel_entry_addr();
+
+    // set linking flags
+    println!("cargo:rustc-link-arg=-nostartfiles");
+    println!("cargo:rustc-link-arg=-nostdlib");
 
     create_asm_entry_1();
 }

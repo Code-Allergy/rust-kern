@@ -12,4 +12,5 @@ fn set_ld_script() {
 
 fn main() {
     set_ld_script();
+    println!("cargo:rustc-link-arg=-nostartfiles");
 }
