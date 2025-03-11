@@ -1,108 +1,111 @@
+// OUTER BUILD: build.rs
+// BUILD SDCARD IMAGE FROM SUBMODULES
 use std::env;
-use std::path::Path;
+use std::io::Write;
 use std::path::PathBuf;
-use std::process::Command;
+use std::process::{Command, Stdio};
+
+const IMG_SIZE_MB: u32 = 100;
+const BOOT_PART_SIZE_MB: u32 = 50;
+
+const OUTPUT_IMAGE: &str = "sdimg.img";
+const KERNEL_IMG: &str = "test.txt";
+const BOOTLOADER_MLO: &str = "bootloader/target/deploy/MLO";
+
+fn build_disk_img() {
+    let out_dir = PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR not set"));
+    let out_file = out_dir.join(OUTPUT_IMAGE);
+
+    eprintln!("Creating main image");
+    Command::new("dd")
+        .args(&[
+            "if=/dev/zero",
+            &format!("of={}", out_file.to_str().unwrap()),
+            "bs=1M",
+            &format!("count={}", IMG_SIZE_MB),
+        ])
+        .status()
+        .expect("Failed to create disk image");
+
+    eprintln!("Creating boot partition image");
+    Command::new("dd")
+        .args(&[
+            "if=/dev/zero",
+            &format!("of={}.boot", out_file.to_str().unwrap()),
+            "bs=1M",
+            &format!("count={}", BOOT_PART_SIZE_MB),
+        ])
+        .status()
+        .expect("Failed to create boot partition image");
+    // Partition the disk image
+    eprintln!("Partitioning output disk image");
+    let mut fdisk = Command::new("fdisk")
+        .arg(OUTPUT_IMAGE)
+        .stdin(Stdio::piped())
+        .spawn()
+        .expect("Failed to spawn fdisk");
+
+    let input = format!("o\nn\np\n1\n\n+{}M\nt\nc\na\nw\n", BOOT_PART_SIZE_MB);
+    if let Some(stdin) = fdisk.stdin.as_mut() {
+        stdin
+            .write_all(input.as_bytes())
+            .expect("Failed to write to fdisk");
+    }
+    fdisk.wait().expect("Failed to wait for fdisk");
+
+    eprintln!("Formatting boot partition image as FAT32");
+    Command::new("mkfs.vfat")
+        .args(&["-F", "32", &format!("{}.boot", out_file.to_str().unwrap())])
+        .status()
+        .expect("Failed to format boot partition image");
+    // panic!("Done");
+    // Now use mtools to copy files into this boot partition
+    eprintln!("Setting up mtools configuration");
+    let mtools_conf =
+        "drive c: file=\"".to_string() + &format!("{}.boot", out_file.to_str().unwrap()) + "\"";
+    std::fs::write("mtools.conf", mtools_conf).expect("Failed to write mtools configuration");
+    unsafe { std::env::set_var("MTOOLSRC", "mtools.conf") };
+
+    eprintln!("Copying MLO file");
+    Command::new("mcopy")
+        .args(&["-o", BOOTLOADER_MLO, "c:/MLO"])
+        .status()
+        .expect("Failed to copy MLO file");
+
+    eprintln!("Creating boot folder");
+    Command::new("mdir")
+        .args(&["c:/boot"])
+        .status()
+        .expect("Failed to create boot folder");
+
+    eprintln!("Copying kernel image");
+    Command::new("mcopy")
+        .args(&["-o", KERNEL_IMG, "c:/boot/kernel.bin"])
+        .status()
+        .expect("Failed to copy kernel image");
+
+    // TODO verify that the start is at 2048, for now assume it is
+    let offset = 2048 * 512;
+    // Copy the boot partition into the disk image at the right offset
+    eprintln!("Copying boot partition into disk image");
+    Command::new("dd")
+        .args(&[
+            &format!("if={}.boot", out_file.to_str().unwrap()),
+            &format!("of={}", out_file.to_str().unwrap()),
+            "bs=512",
+            &format!("seek={}", offset),
+            "conv=notrunc",
+        ])
+        .status()
+        .expect("Failed to copy boot partition into disk image");
+
+    // Clean up
+    std::fs::remove_file("mtools.conf").ok();
+    std::fs::remove_file(&format!("{}.boot", out_file.to_str().unwrap())).ok();
+
+    eprintln!("Disk image created successfully at {}", OUTPUT_IMAGE);
+}
 
 fn main() {
-    // Detect Cargo features
-    let is_bbb = env::var("CARGO_FEATURE_BBB").is_ok();
-    let is_qemu = env::var("CARGO_FEATURE_QEMU").is_ok();
-
-    // Ensure only one feature is enabled at a time
-    if is_bbb && is_qemu {
-        panic!("Cannot enable both 'bbb' and 'qemu' features at the same time.");
-    }
-
-    if is_bbb {
-        println!("cargo:rustc-cfg=feature=\"bbb\"");
-        println!("Building for BeagleBone Black...");
-        println!("cargo:rustc-link-arg=-Tlinker_bbb.ld");
-    } else if is_qemu {
-        println!("cargo:rustc-cfg=feature=\"qemu\"");
-        println!("Building for QEMU...");
-        println!("cargo:rustc-link-arg=-Tlinker_qemu.ld");
-        // Add QEMU-specific build steps here
-    } else {
-        panic!("Either the 'bbb' or 'qemu' feature must be enabled.");
-    }
-
-    println!("cargo:rerun-if-changed=src/boot.S");
-
-    // Get output directory from cargo
-    let out_dir = env::var("OUT_DIR").expect("Failed to get OUT_DIR");
-
-    // Specify the object file and archive paths
-    let obj_path = Path::new(&out_dir).join("boot.o");
-    let lib_path = Path::new(&out_dir).join("libboot.a");
-
-    // Step 1: Assemble the file
-    println!("Running arm-none-eabi-gcc to assemble with preprocessing...");
-    let status = Command::new("arm-none-eabi-gcc")
-        .arg("-c")
-        .arg("-x")
-        .arg("assembler-with-cpp")
-        .arg("-mcpu=cortex-a8")
-        .arg("-march=armv7-a")
-        .arg("src/boot.S")
-        .arg("-o")
-        .arg(&obj_path)
-        .status()
-        .expect("Failed to run arm-none-eabi-gcc");
-
-    if !status.success() {
-        panic!("Assembler failed with status: {}", status);
-    }
-
-    // Step 2: Create a static library
-    println!("Creating static library...");
-    let status = Command::new("arm-none-eabi-ar")
-        .arg("crs")
-        .arg(&lib_path)
-        .arg(&obj_path)
-        .status()
-        .expect("Failed to create static library");
-
-    if !status.success() {
-        panic!("Creating library failed with status: {}", status);
-    }
-
-    // build fat32 library (C)
-    let status = Command::new("make")
-        .current_dir("libfat32")
-        .status()
-        .expect("Failed to build libfat32");
-    if !status.success() {
-        panic!("Building libfat32 failed with status: {}", status);
-    }
-
-    // Tell cargo where to find our library
-    println!("cargo:rustc-link-search=native={}", out_dir);
-    println!("cargo:rustc-link-lib=static=boot");
-
-    // add the fat32 library
-    println!("cargo:rustc-link-search=native=libfat32");
-    println!("cargo:rustc-link-lib=static=fat32");
-
-    // create bindings for the fat32 library
-
-    let bindings = bindgen::Builder::default()
-        .header("libfat32/wrapper.h")
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
-        .use_core()
-        .generate()
-        .expect("Unable to generate bindings");
-    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
-    bindings
-        .write_to_file(out_path.join("bindings.rs"))
-        .expect("Couldn't write bindings!");
-
-    // Force inclusion of __init symbol
-    println!("cargo:rustc-link-arg=-u__init");
-
-    // Add necessary linker flags
-    println!("cargo:rustc-link-arg=-nostartfiles");
-    println!("cargo:rustc-link-arg=-nostdlib");
-    println!("cargo:rustc-link-arg=-static");
-    println!("cargo:rustc-link-arg=-mcpu=cortex-a8");
-    println!("cargo:rustc-link-arg=-march=armv7-a");
+    build_disk_img();
 }

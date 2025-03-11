@@ -6,7 +6,7 @@
  *  TODO: move lib fns to common lib when linked
  */
 
-char* strchr(const char* str, int ch)
+static char* strchr(const char* str, int ch)
 {
     while (*str != '\0')
     {
@@ -19,7 +19,7 @@ char* strchr(const char* str, int ch)
     return (ch == '\0') ? (char*) str : NULL;
 }
 
-size_t strlen(const char* str)
+static size_t strlen(const char* str)
 {
     const char* s = str;
     while (*s)
@@ -36,7 +36,7 @@ int toupper(int c)
     return c;
 }
 
-int memcmp(const void* s1, const void* s2, size_t n)
+static int memcmp(const void* s1, const void* s2, size_t n)
 {
     const unsigned char *p1 = s1, *p2 = s2;
     size_t i;
@@ -50,7 +50,7 @@ int memcmp(const void* s1, const void* s2, size_t n)
     return 0;
 }
 
-char* strncpy(char* dest, const char* src, size_t n)
+static char* strncpy(char* dest, const char* src, size_t n)
 {
     size_t i;
     for (i = 0; i < n && src[i] != '\0'; i++)
@@ -64,7 +64,7 @@ char* strncpy(char* dest, const char* src, size_t n)
     return dest;
 }
 
-void* memcpy(void* dest, const void* src, size_t n)
+static void* memcpy(void* dest, const void* src, size_t n)
 {
     const char* s = src;
     char* d       = dest;

@@ -1,0 +1,22 @@
+[package]
+name = "rust-bootloader"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+[build-dependencies]
+bindgen = "0.71.0"
+
+# [profile.dev]
+# panic = "abort"
+
+
+# [profile.release]
+# panic = "abort"
+
+[features]
+default = ["qemu"]
+# default = ["bbb"]
+qemu = []
+bbb = []

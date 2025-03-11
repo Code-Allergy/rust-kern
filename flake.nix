@@ -25,6 +25,9 @@
         pkgs.parted
         pkgs.qemu
         pkgs.llvmPackages.libclang # rustbindgen
+        # Fat32 filesystem tools
+        pkgs.mtools
+        pkgs.fatcat
       ];
 
       shellHook = ''

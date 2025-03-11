@@ -1,7 +1,9 @@
 /target
 .direnv/
 
-libfat32/*.o
-libfat32/*.a
 
-qemu.log
+# Added by cargo
+#
+# already existing elements were commented out
+
+#/target

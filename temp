@@ -1,0 +1,15 @@
+build.rs
+.cargo
+Cargo.lock
+Cargo.toml
+.direnv
+.envrc
+flake.lock
+flake.nix
+.git
+.gitignore
+mksdimg.sh
+target
+temp
+test.txt
+TODO
