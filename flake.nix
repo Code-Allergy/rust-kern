@@ -25,6 +25,7 @@
         pkgs.parted
         pkgs.qemu
         pkgs.llvmPackages.libclang # rustbindgen
+        pkgs.minicom
         # Fat32 filesystem tools
         pkgs.mtools
         pkgs.fatcat

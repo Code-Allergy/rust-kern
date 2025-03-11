@@ -38,6 +38,9 @@ pub extern "C" fn rust_main() -> ! {
     ccm::init();
     dram::init();
     mmu::init();
+
+    #[cfg(feature = "bbb")]
+    panic!("End of rust_main for BBB, need mmc reads");
     mmc::init();
 
     println!(

@@ -16,7 +16,8 @@ else
 endif
 
 BUILD_DIR ?= target/$(PLATFORM)
-OUTPUT_DIR = deploy/$(PLATFORM)
+OUTPUT_BASE_DIR = deploy
+OUTPUT_DIR = $(OUTPUT_BASE_DIR)/$(PLATFORM)
 
 RUST_TRIPLE = armv7a-none-eabi
 RUST_BUILD_DIR = $(BUILD_DIR)/$(RUST_TRIPLE)/$(BUILD_MODE)
@@ -93,14 +94,16 @@ _qemu: $(OUT_SDCARD) $(BOOTLOADER_BIN)
 	-d guest_errors,unimp,int -D qemu.log \
 	-kernel $(BOOTLOADER_BIN)
 
+flash:
+	$(MAKE) _flash PLATFORM=bbb
+
 _flash: $(OUT_SDCARD)
 ifndef DEV
 	$(error DEV is not set)
 endif
 	$(FLASH_BBB_SCRIPT) $(OUT_SDCARD) $(DEV)
 
-flash:
-	$(MAKE) _flash PLATFORM=bbb
 
 clean:
 	cargo clean
+	rm -rf $(OUTPUT_BASE_DIR)
