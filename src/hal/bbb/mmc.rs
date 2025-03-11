@@ -390,6 +390,7 @@ pub const SD_CMDR_SHORT_RESPONSE_BUSY: u32 = 3 << 16;
 pub const SD_CMDR_DATA_PRESENT: u32 = 1 << 21;
 pub const SD_CMDR_WRITE: u32 = 0 << 4;
 pub const SD_CMDR_READ: u32 = 1 << 4;
+pub const SD_CMDR_ACMD12: u32 = 1 << 2;
 
 use super::regs::{
     base::{CM_PER_BASE, CONTROL_MODULE_BASE},
@@ -585,6 +586,7 @@ fn set_bus_freq(freq_in: u32, freq_out: u32, bypass: u32) {
         let mut clkd = freq_in / freq_out;
         clkd = if clkd < 2 { 2 } else { clkd };
         clkd = if clkd > 1023 { 1023 } else { clkd };
+        println!("CLKD: {}", clkd);
 
         /* Do not cross the required freq */
         while ((freq_in / clkd) > freq_out) {
@@ -620,7 +622,11 @@ fn send_cmd(cmd: u32, arg: u32, resp: &mut [u32; 4]) {
         9 => SD_CMDR_LONG_RESPONSE,
         8 => SD_CMDR_SHORT_RESPONSE_BUSY,
         16 => SD_CMDR_NO_RESPONSE,
-        17 => SD_CMDR_NO_RESPONSE | SD_CMDR_DATA_PRESENT | SD_CMDR_READ | (1 << 20) | (1 << 19),
+        17 => {
+            SD_CMDR_SHORT_RESPONSE_BUSY | SD_CMDR_DATA_PRESENT | SD_CMDR_READ | SD_CMDR_ACMD12
+            // | (1 << 20)
+            // | (1 << 19)
+        }
         55 => SD_CMDR_SHORT_RESPONSE,
         41 => SD_CMDR_SHORT_RESPONSE,
         _ => SD_CMDR_NO_RESPONSE,
@@ -636,7 +642,6 @@ fn send_cmd(cmd: u32, arg: u32, resp: &mut [u32; 4]) {
         reg32_write(MMC0_BASE, MMC_CMD, (cmd << 24) | cmdr); // CMD load, start command
 
         // wait for command to complete
-        // while reg32_read_masked(MMC0_BASE, MMC_STAT, MMCHS_STAT_CC) != 0x1 {}
         if !is_cmd_complete(0xFFFFF) {
             panic!("Command failed to complete: CMD{}", cmd);
         }

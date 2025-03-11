@@ -13,5 +13,6 @@ mod platform {
 
 #[cfg(feature = "bbb")]
 mod platform {
+    pub fn read_sector(sector: u32, buffer: &mut [u8; 512]) {}
     pub use crate::hal::bbb::mmc::init;
 }
