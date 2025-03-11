@@ -58,8 +58,9 @@ _do_qemu_gdb: $(call get_build_dir,qemu)/bootloader.bin $(OUT_SDIMG)
 	-d guest_errors,unimp,int -S -gdb tcp::1234
 
 # General build rules
+# for now, instead of kernel pass in a text file
 $(BUILD_DIR)/sd.img: $(BUILD_DIR)/MLO
-	./tools/mksdimage.sh $< $@
+	./tools/mksdimage.sh $< $@ todo
 
 $(BUILD_DIR)/MLO: $(BUILD_DIR)/bootloader.bin
 	./tools/mk-gpimage $(MLO_DEST_ADDR) $< $@

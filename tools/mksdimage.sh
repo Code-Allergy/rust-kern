@@ -1,31 +1,34 @@
 #!/usr/bin/env bash
-
 MLO=$1
 IMG=$2
-IMG_SIZE_MB=100
+KERNEL=$3
+
+# verify all parameters are provided
+if [ -z $MLO ] || [ -z $IMG ] || [ -z $KERNEL ]; then
+    echo "Usage: $0 <mlo_file> <output_file> <kernel_file>"
+    exit 1
+fi
+
+# Partition parameters
 BOOT_PART_SIZE_MB=50
-LOOPDEV=""
 
-set -e
+# For now, unused
+ROOT_PART_SIZE_MB=50
 
-# check parameters
-if [ -z $MLO ]; then
-    echo "Usage: $0 <mlo_file> <output_file>"
-    exit 1
-fi
-if [ -z $IMG ]; then
-    echo "Usage: $0 <mlo_file> <output_file>"
-    exit 1
-fi
+IMG_SIZE_MB=$((BOOT_PART_SIZE_MB + ROOT_PART_SIZE_MB))
 
-if [ ! -f $MLO ]; then
-    echo "Error: $MLO not found"
-    exit 1
-fi
+# Assume the start is at sector 2048
+START_SECTOR=2048
+OFFSET=$((START_SECTOR * 512))
 
-echo "Creating $IMG ($IMG_SIZE_MB MB)..."
+# Create boot partition image
+BOOT_IMG="$IMG.boot.img"
+
+# Create disk images
 dd if=/dev/zero of=$IMG bs=1M count=$IMG_SIZE_MB status=progress
+dd if=/dev/zero of=$BOOT_IMG bs=1M count=$BOOT_PART_SIZE_MB status=progress
 
+# Partition disk image
 echo "Partitioning $IMG..."
 fdisk $IMG <<EOF
 o
@@ -40,27 +43,28 @@ a
 w
 EOF
 
-echo "Creating loop device..."
-LOOPDEV=$(losetup -f)
-sudo losetup $LOOPDEV $IMG
+# Format boot partition image
+echo "Creating partition image..."
+mkfs.vfat -F 32 $BOOT_IMG
 
-# Inform the OS of partition table changes
-sudo partprobe $LOOPDEV
+# Create mtools configuration file
+echo "drive c: file=\"$BOOT_IMG\"" > mtools.conf
+export MTOOLSRC="$(pwd)/mtools.conf"
 
-echo "Creating FAT32 filesystem..."
-sudo mkfs.vfat -F 32 ${LOOPDEV}p1
+# Copy MLO to boot partition image
+echo "Copying MLO to boot partition..."
+mcopy -o $MLO c:/MLO
 
-echo "Copying MLO..."
-# if ./mnt exists (likely from failed previous run), unmout it
-if [ -d ./tmp ]; then
-    sudo umount ./tmp
-fi
-mkdir -p ./tmp
-sudo mount -o uid=$(id -u),gid=$(id -g) ${LOOPDEV}p1 ./tmp
-cp $MLO ./tmp/MLO
-sync
-sudo umount ./tmp
-rmdir ./tmp
+# Copy kernel image to boot partition image
+echo "Copying kernel image to boot partition..."
+mcopy -o kernel/target/deploy/Image c:/Image
 
-sudo losetup -d $LOOPDEV
+# DD the partition image into the full image
+echo "Writing boot partition to disk image..."
+dd if=$BOOT_IMG of=$IMG seek=$START_SECTOR bs=512 conv=notrunc
+
+# Clean up
+rm mtools.conf
+rm $BOOT_IMG
+
 echo "Done creating $IMG"
