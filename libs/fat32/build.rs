@@ -1,28 +1,35 @@
 use std::env;
 use std::path::PathBuf;
 
-fn main() {
-    println!("cargo:rerun-if-changed=build.rs");
-    println!("cargo:rerun-if-changed=c_src/fat32.c");
-    println!("cargo:rerun-if-changed=c_src/fat32.h");
+fn build_c_lib() {
+    cc::Build::new()
+        .file("c_src/fat32.c")
+        .compiler("arm-none-eabi-gcc")
+        .warnings(true)
+        .extra_warnings(true)
+        .warnings_into_errors(true)
+        .no_default_flags(true)
+        .flag("-c")
+        .flag("-g")
+        .flag("-O3")
+        .flag("-Wpedantic")
+        .flag("-nostdlib")
+        .flag("-nostartfiles")
+        .flag("-ffreestanding")
+        .flag("-fno-builtin")
+        .flag("-mcpu=cortex-a8")
+        .flag("-mfloat-abi=soft")
+        .flag("-marm")
+        .flag("-ffunction-sections")
+        .flag("-fdata-sections")
+        .flag("-fno-omit-frame-pointer")
+        .include("c_src")
+        .compile("fat32");
 
-    // Get output directory from cargo
-    let out_dir = std::env::var("OUT_DIR").expect("Failed to get OUT_DIR");
-
-    // build fat32 static library (C)
-    let status = std::process::Command::new("make")
-        .args(&[format!("BUILD_DIR={}", out_dir)])
-        .status()
-        .expect("Failed to build libfat32");
-    eprintln!("Expected build at: {}", out_dir);
-    if !status.success() {
-        panic!("Building libfat32 failed with status: {}", status);
-    }
-
-    // Tell cargo where to find our library
-    println!("cargo:rustc-link-search=native={}", out_dir);
     println!("cargo:rustc-link-lib=static=fat32");
+}
 
+fn build_rust_bindings() {
     // create bindings for the fat32 library
     let bindings = bindgen::Builder::default()
         .header("c_src/wrapper.h")
@@ -36,4 +43,13 @@ fn main() {
     bindings
         .write_to_file(out_path.join("bindings.rs"))
         .expect("Couldn't write bindings!");
+}
+
+fn main() {
+    println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo:rerun-if-changed=c_src/fat32.c");
+    println!("cargo:rerun-if-changed=c_src/fat32.h");
+
+    build_c_lib();
+    build_rust_bindings();
 }
