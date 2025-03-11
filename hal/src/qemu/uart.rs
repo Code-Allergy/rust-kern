@@ -1,5 +1,5 @@
 use super::regs::{base::UART0_BASE, uart::*};
-use crate::hal::util::reg32_write;
+use crate::util::reg32_write;
 
 pub fn init() {
     unsafe {

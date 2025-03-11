@@ -1,9 +1,12 @@
-/target
 /deploy
 /.direnv
 
 qemu.log
 
+
+**/.cache
+**/compile_commands.json
+**/target
 # Added by cargo
 #
 # already existing elements were commented out

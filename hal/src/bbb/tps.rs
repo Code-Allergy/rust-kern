@@ -1,4 +1,4 @@
-use crate::hal::util::reg32_read_masked;
+use crate::util::reg32_read_masked;
 
 use super::{
     cm::get_device_version,

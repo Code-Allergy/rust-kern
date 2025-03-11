@@ -12,8 +12,8 @@ fn simple_memtest() {
     #[cfg(feature = "bbb")]
     simple_memtest_from(DRAM_START, DRAM_END);
 
-    /// On qemu, the bootloader is loaded immediately
-    /// into dram, we do this so we dont overwrite it
+    // On qemu, the bootloader is loaded immediately
+    // into dram, we do this so we dont overwrite it
     #[cfg(feature = "qemu")]
     simple_memtest_from(DRAM_START + 0x20000, DRAM_END);
 }
@@ -106,7 +106,7 @@ fn simple_memtest_from(start: usize, end: usize) {
 // Platform-specific UART functions
 #[cfg(feature = "qemu")]
 mod platform {
-    pub use crate::hal::qemu::dram::{DRAM_END, DRAM_START};
+    pub use crate::qemu::dram::{DRAM_END, DRAM_START};
 
     /// no init needed for qemu, already initialized in dram
     pub fn init() {}
@@ -114,8 +114,8 @@ mod platform {
 
 #[cfg(feature = "bbb")]
 mod platform {
-    pub use crate::hal::bbb::dram::{DRAM_END, DRAM_START};
-    use crate::hal::bbb::dram::{init_ddr_final, init_ddr_phys, init_emif, init_vtp};
+    pub use crate::bbb::dram::{DRAM_END, DRAM_START};
+    use crate::bbb::dram::{init_ddr_final, init_ddr_phys, init_emif, init_vtp};
 
     pub fn init() {
         init_emif();

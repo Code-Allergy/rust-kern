@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - "--target=arm-none-eabi"
+    - "--sysroot=$(arm-none-eabi-gcc -print-sysroot)"
+    - "-I$(arm-none-eabi-gcc -print-sysroot)/include"

@@ -15,9 +15,9 @@ mod platform {
 
 #[cfg(feature = "bbb")]
 mod platform {
-    pub use crate::hal::bbb::i2c::mux_pins;
-    use crate::hal::bbb::i2c::*;
-    use crate::hal::bbb::regs::i2c::{I2C_INTERNAL_CLOCK, I2C_OUTPUT_CLOCK, I2C_SYSTEM_CLOCK};
+    pub use crate::bbb::i2c::mux_pins;
+    use crate::bbb::i2c::*;
+    use crate::bbb::regs::i2c::{I2C_INTERNAL_CLOCK, I2C_OUTPUT_CLOCK, I2C_SYSTEM_CLOCK};
     pub fn init() {
         init_clocks();
         mux_pins(0);

@@ -3,7 +3,7 @@ use super::regs::{
     cm::*,
     i2c::*,
 };
-use crate::hal::util::*;
+use crate::util::*;
 
 pub fn master_disable() {
     unsafe {

@@ -7,7 +7,6 @@ fn main() {
     // Detect Cargo features
     let is_bbb = env::var("CARGO_FEATURE_BBB").is_ok();
     let is_qemu = env::var("CARGO_FEATURE_QEMU").is_ok();
-    let target = env::var("TARGET").unwrap_or_else(|_| "arm-none-eabi".to_string());
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
 
     // Ensure only one feature is enabled at a time

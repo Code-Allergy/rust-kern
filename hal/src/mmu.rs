@@ -141,7 +141,7 @@ pub fn get_boot_tables() -> &'static mut [L1PageTableEntry; 4096] {
 }
 
 pub fn get_boot_entry_at_virt(virt_addr: u32) -> &'static mut L1PageTableEntry {
-    let mut tables = get_boot_tables();
+    let tables = get_boot_tables();
     let index = (virt_addr >> 20) as usize;
     &mut tables[index]
 }

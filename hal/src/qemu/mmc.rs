@@ -1,22 +1,10 @@
-use crate::{
-    hal::{
-        asm,
-        util::{reg32_read, reg32_read_masked, reg32_write, reg32_write_masked},
-    },
-    panic,
-};
+use crate::qemu::regs::{base::MMC0_BASE, mmc::*};
 
-use super::regs::{base::MMC0_BASE, mmc::*};
-
-#[derive(Debug)]
-pub enum MMCError {
-    NoResponse,
-    Timeout,
-    BadCMD8Response,
-}
+use crate::mmc::MMCError;
+use crate::util::{reg32_read, reg32_read_masked, reg32_write, reg32_write_masked};
 
 pub fn read_sector(sector: u32, buffer: &mut [u8; 512]) -> Result<(), MMCError> {
-    mmc_send_cmd(17, sector * 512).is_err();
+    mmc_send_cmd(17, sector * 512)?;
     let buffer_ptr = buffer.as_mut_ptr() as *mut u32; // cast to u32 ptr to read 32 bits at a time
     unsafe {
         for i in 0..128 {
@@ -28,7 +16,7 @@ pub fn read_sector(sector: u32, buffer: &mut [u8; 512]) -> Result<(), MMCError> 
 }
 
 pub fn mmc_send_cmd(cmd: u32, arg: u32) -> Result<(), MMCError> {
-    let mut cmd_flags = match cmd {
+    let cmd_flags = match cmd {
         0 => SD_CMDR_NO_RESP,
         2 => SD_CMDR_LONG_RESP,
         3 => SD_CMDR_SHORT_RESP,

@@ -1,10 +1,12 @@
 #![no_std]
 #![no_main]
+#![cfg_attr(test, feature(custom_test_frameworks))]
+#![cfg_attr(test, test_runner(crate::test_runner))]
+#![cfg_attr(test, reexport_test_harness_main = "test_main")]
 
-mod hal;
 mod panic;
 
-use crate::hal::{ccm, dram, i2c, mmc, mmu, uart};
+use hal::{ccm, dbg, dram, i2c, mmc, mmu, println, uart};
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
@@ -16,7 +18,7 @@ fn get_boot_entry() -> usize {
     init_addr
 }
 #[derive(Debug)]
-struct BootInfo {
+struct _BootInfo {
     pub boot_entry: usize,
     pub boot_size: usize,
 }
@@ -68,4 +70,21 @@ pub extern "C" fn rust_main() -> ! {
     // fat32_diskio_t.read_sector = Some(hal::mmc::read_sector);
 
     panic!("End of main");
+}
+
+// TODO testing
+#[cfg(test)]
+fn test_runner(tests: &[&dyn Fn()]) {
+    for test in tests {
+        test(); // Simply run each test
+    }
+}
+
+#[cfg(test)]
+use core::panic::PanicInfo;
+
+#[cfg(test)]
+#[panic_handler]
+fn test_panic(_info: &PanicInfo) -> ! {
+    loop {} // Halt the system on panic
 }

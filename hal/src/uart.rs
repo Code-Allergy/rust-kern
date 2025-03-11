@@ -19,10 +19,10 @@ impl Write for Writer {
 // Platform-specific UART functions
 #[cfg(feature = "qemu")]
 mod platform {
-    pub use crate::hal::qemu::uart::{init, write_byte};
+    pub use crate::qemu::uart::{init, write_byte};
 }
 
 #[cfg(feature = "bbb")]
 mod platform {
-    pub use crate::hal::bbb::uart::{init, write_byte};
+    pub use crate::bbb::uart::{init, write_byte};
 }

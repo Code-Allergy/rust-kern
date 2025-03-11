@@ -1,7 +1,7 @@
 use super::regs::base::{CM_WKUP_BASE, CONTROL_MODULE_BASE, UART0_BASE};
 use super::regs::cm::*;
 use super::regs::uart::*;
-use crate::hal::util::{reg32_read, reg32_read_masked, reg32_write, reg32_write_masked};
+use crate::util::{reg32_read, reg32_read_masked, reg32_write, reg32_write_masked};
 
 pub fn init() {
     unsafe {

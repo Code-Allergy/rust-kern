@@ -69,7 +69,7 @@ mod platform {
 #[cfg(feature = "bbb")]
 mod platform {
     use super::*;
-    use crate::hal::bbb::eeprom::*;
+    use crate::bbb::eeprom::*;
     pub fn get_board_info() -> BoardInfo {
         let mut info = BoardInfo {
             header: [0; EEPROM_BOARD_HEADER_LEN as usize],

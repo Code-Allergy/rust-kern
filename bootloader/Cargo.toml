@@ -4,11 +4,12 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+hal = { path = "../hal", default-features = false }
 
 [build-dependencies]
 bindgen = "0.71.0"
 
 [features]
 default = ["qemu"]
-qemu = []
-bbb = []
+qemu = ["hal/qemu"]
+bbb = ["hal/bbb"]

@@ -3,7 +3,7 @@ macro_rules! print {
     ($($arg:tt)*) => {
         {
             use core::fmt::Write; // Ensure the trait is in scope
-            $crate::hal::Writer.write_fmt(format_args!($($arg)*)).unwrap();
+            $crate::Writer.write_fmt(format_args!($($arg)*)).unwrap();
         }
     };
 }

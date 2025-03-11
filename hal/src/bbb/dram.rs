@@ -8,7 +8,7 @@ use super::{
     },
 };
 
-use crate::hal::util::*;
+use crate::util::*;
 
 pub const DRAM_START: usize = 0x8000_0000;
 pub const DRAM_END: usize = 0x9FFF_FFFF;

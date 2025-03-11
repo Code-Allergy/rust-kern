@@ -3,7 +3,7 @@ use super::regs::{
     cm::*,
 };
 use super::tps::get_opp_config;
-use crate::hal::util::*;
+use crate::util::*;
 
 pub fn get_device_version() -> u32 {
     unsafe { reg32_read(CONTROL_MODULE_BASE, CONTROL_DEVICE_ID) >> CONTROL_DEVICE_ID_DEVREV_SHIFT }

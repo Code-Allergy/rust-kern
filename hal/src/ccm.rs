@@ -10,8 +10,7 @@ mod platform {
 
 #[cfg(feature = "bbb")]
 mod platform {
-    use crate::hal::bbb::cm::*;
-    use crate::hal::bbb::tps::*;
+    use crate::bbb::{cm::*, tps::*};
     pub fn init() {
         config_vdd_op_voltage();
         let opp_max_idx = boot_max_opp_get();
