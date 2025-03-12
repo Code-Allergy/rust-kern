@@ -44,6 +44,7 @@
           baseInputs = [
             (pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml)
             pkgs.gcc-arm-embedded
+            pkgs.perl
             pkgs.llvmPackages.libclang
           ];
           commonEnv = {
