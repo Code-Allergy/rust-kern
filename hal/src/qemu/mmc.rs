@@ -64,7 +64,7 @@ pub fn init() -> Result<(), MMCError> {
         reg32_write_masked(MMC0_BASE, MMC_GCTRL, SD_GCTL_SOFT_RST, SD_GCTL_SOFT_RST);
         while reg32_read_masked(MMC0_BASE, MMC_GCTRL, SD_GCTL_SOFT_RST) == 1 {}
 
-        reg32_write(MMC0_BASE, MMC_CLKCR, (59 << 0) | (1 << 16)); // 24MHz/(59+1) = 400kHz
+        reg32_write(MMC0_BASE, MMC_CLKCR, 59 | (1 << 16)); // 24MHz/(59+1) = 400kHz
 
         mmc_send_cmd(0, 0)?;
         mmc_send_cmd(8, 0x1AA)?;
@@ -87,7 +87,7 @@ pub fn init() -> Result<(), MMCError> {
         let rca = (reg32_read(MMC0_BASE, MMC_RESP0) >> 16) & 0xFFFF;
         mmc_send_cmd(7, rca << 16)?;
 
-        reg32_write(MMC0_BASE, MMC_CLKCR, (0 << 0) | (1 << 16));
+        reg32_write(MMC0_BASE, MMC_CLKCR, 1 << 16);
         reg32_write(MMC0_BASE, MMC_IDIE, (1 << 4) | (1 << 3));
         reg32_write(MMC0_BASE, MMC_BLKSZ, 512);
     }

@@ -12,7 +12,7 @@ pub extern "C" fn _start(info: &mut BootInfoHeader) -> ! {
     println!("Hello, world!");
     println!("This is aasdfasdf test, sizeasdfs: {:x}", info.boot_size);
     dbg!(info);
-    loop {}
+    todo!("End of kernel main");
 }
 
 // TODO testing

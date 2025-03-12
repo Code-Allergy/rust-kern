@@ -1,5 +1,3 @@
-/// Get info about the current running board
-
 pub const EEPROM_BOARD_HEADER_LEN: u32 = 4;
 pub const EEPROM_BOARD_NAME_LEN: u32 = 8;
 pub const EEPROM_BOARD_VERSION_LEN: u32 = 4;

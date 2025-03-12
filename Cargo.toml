@@ -10,7 +10,7 @@ exclude = ["target/", "tools/"]
 # Profile Configurations
 # ======================
 [profile.dev]
-opt-level = 1           # Basic optimizations for faster debug cycles
+opt-level = 1
 debug = true            # Include debug symbols (controlled via RUSTFLAGS)
 debug-assertions = true
 overflow-checks = true
@@ -27,8 +27,6 @@ panic = 'abort'
 strip = true
 debug = 1                                      # Minimal debug info
 overflow-checks = false
-# Embedded-specific optimizations
-codegen-units-all = 1
 
 [profile.optimized]
 rustflags = ["-C", "link-arg=-fno-exceptions"]
@@ -40,7 +38,6 @@ codegen-units = 4
 
 [profile.test]
 inherits = "dev"
-panic = "abort"
 
 # ======================
 # Workspace Lints

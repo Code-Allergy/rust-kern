@@ -29,6 +29,8 @@ OUT_SDCARD = $(OUTPUT_DIR)/sdcard.img
 MAKE_SDCARD_SCRIPT = ./tools/mksdimage.sh
 MAKE_MLO_SCRIPT = ./tools/mk-gpimage
 FLASH_BBB_SCRIPT = sudo ./tools/flash_bbb.sh
+# export make so it can be checked in the run_qemu.sh script
+RUN_QEMU_SCRIPT = MAKE=$(MAKE) ./tools/run_qemu.sh
 
 # Required targets for sd image
 BOOTLOADER_ELF = $(RUST_BUILD_DIR)/bootloader
@@ -52,6 +54,14 @@ KERNEL_C_FILES = $(shell find $(KERNEL_SRC_DIR) -type f -name "*.c")
 KERNEL_ASM_FILES = $(shell find $(KERNEL_SRC_DIR) -type f -name "*.S")
 KERNEL_SRC_FILES = $(KERNEL_RS_FILES) $(KERNEL_C_FILES) $(KERNEL_ASM_FILES)
 
+
+# Output formatting
+BLUE = '\033[0;34m'
+NC = '\033[0m'
+SPACE = '\040'
+PREFIX := "$(BLUE)$(SPACE)$(SPACE)$(SPACE)$(SPACE)Building$(NC)"
+RUN_PREFIX := "$(BLUE)$(SPACE)$(SPACE)$(SPACE)$(SPACE)Running$(NC)"
+
 .PHONY: all clean bootloader qemu
 
 all: $(OUT_SDCARD)
@@ -62,7 +72,9 @@ all: $(OUT_SDCARD)
 #
 ################################################################################################
 $(OUT_SDCARD): $(BOOTLOADER_MLO) $(KERNEL_BIN)
-	@$(MAKE_SDCARD_SCRIPT) $(BOOTLOADER_MLO) $@ $(KERNEL_BIN)
+	@$(MAKE_SDCARD_SCRIPT) $(BOOTLOADER_MLO) $@ $(KERNEL_BIN) | while read line; do \
+		echo -e "$(PREFIX) $$line"; \
+	done
 
 #
 # BOOTLOADER
@@ -71,22 +83,24 @@ $(BOOTLOADER_MLO): $(BOOTLOADER_BIN) | $(OUTPUT_DIR)
 	@$(MAKE_MLO_SCRIPT) $(MLO_DEST_ADDR) $< $@
 
 $(BOOTLOADER_BIN): $(BOOTLOADER_ELF) | $(OUTPUT_DIR)
-	@echo "Creating bootloader flat binary from rust build..."
+	@echo -e "$(PREFIX) Creating bootloader flat binary from rust build..."
 	@arm-none-eabi-objcopy -O binary $< $@
 
 $(BOOTLOADER_ELF): $(BOOTLOADER_SRC_FILES)
-	CARGO_TARGET_DIR=$(BUILD_DIR) cargo build $(CARGO_FLAGS) -p bootloader \
+	@echo -e "$(PREFIX) Calling cargo to build bootloader..."
+	@CARGO_TARGET_DIR=$(BUILD_DIR) cargo build $(CARGO_FLAGS) -p bootloader \
 	    --features "boot_mmc"
 
 #
 # KERNEL
 #
 $(KERNEL_BIN): $(KERNEL_ELF) | $(OUTPUT_DIR)
-	@echo "Creating kernel flat binary from rust build..."
+	@echo -e "$(PREFIX) Creating kernel flat binary from rust build..."
 	@arm-none-eabi-objcopy -O binary $< $@
 
 $(KERNEL_ELF): $(KERNEL_SRC_FILES)
-	CARGO_TARGET_DIR=$(BUILD_DIR) cargo build $(CARGO_FLAGS) -p kernel
+	@echo -e "$(PREFIX) Calling cargo to build kernel..."
+	@CARGO_TARGET_DIR=$(BUILD_DIR) cargo build $(CARGO_FLAGS) -p kernel
 
 $(OUTPUT_DIR):
 	@mkdir -p $@
@@ -99,25 +113,16 @@ qemu:
 	@$(MAKE) _qemu PLATFORM=qemu
 
 _qemu: $(OUT_SDCARD) $(BOOTLOADER_BIN)
-	qemu-img resize -f raw $(OUT_SDCARD) 128M
-	qemu-system-arm -m 512M -M cubieboard \
-	-cpu cortex-a8 \
-	-serial mon:stdio -nographic \
-	-drive if=sd,format=raw,file=$(OUT_SDCARD) \
-	-d guest_errors,unimp,int -D qemu.log \
-	-kernel $(BOOTLOADER_BIN)
+	@MAKE=$(MAKE) ./tools/run_qemu.sh $(KERNEL_BIN)
 
 qemu_gdb:
 	@$(MAKE) _qemu_gdb PLATFORM=qemu
 
+qemu-gdb:
+	@$(MAKE) _qemu_gdb PLATFORM=qemu
+
 _qemu_gdb: $(OUT_SDCARD) $(BOOTLOADER_BIN)
-	@qemu-img resize $(OUT_SDCARD) 128M
-	qemu-system-arm -m 512M -M cubieboard \
-	-cpu cortex-a8 \
-	-serial mon:stdio -nographic \
-	-drive if=sd,format=raw,file=$(OUT_SDCARD) \
-	-d guest_errors,unimp,int \
-	-kernel $(BOOTLOADER_BIN) -s -S
+	@MAKE=$(MAKE) ./tools/run_qemu.sh $(KERNEL_BIN) --gdb
 
 flash:
 	@$(MAKE) _flash PLATFORM=bbb

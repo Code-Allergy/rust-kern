@@ -167,7 +167,7 @@ pub fn init(kernel_base: u32) {
     }
 
     // for now, map the first 1MB of kernel space to dram
-    let first_page = mmu::get_boot_entry_at_virt(kernel_base as u32);
+    let first_page = mmu::get_boot_entry_at_virt(kernel_base);
     first_page.map_section(dram::DRAM_START as u32, mmu::L1_KERNEL_CODE_FLAGS);
 }
 

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
 MLO=$1
 IMG=$2
 KERNEL=$3

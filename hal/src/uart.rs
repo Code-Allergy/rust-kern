@@ -21,6 +21,7 @@ impl Write for Writer {
 }
 
 /// UART wrapper that implements rmodem's expected Read and Write traits
+#[derive(Debug, Default)]
 pub struct UartDevice;
 
 impl UartDevice {

@@ -899,20 +899,5 @@ pub fn init() -> Result<(), MMCError> {
 
     // set clock to 25MHz
     set_bus_freq(MMCSD_IN_FREQ, 25000000, 0);
-
-    // try and read the first sector
-    let mut buffer = [0; 512];
-    read_sector(0, &mut buffer);
-
-    // check magic number
-    if buffer[510] == 0x55 && buffer[511] == 0xAA {
-        println!("Magic number found!");
-    } else {
-        println!(
-            "Magic number not found!, got {} {} instead",
-            buffer[510], buffer[511]
-        );
-    }
-
     Ok(())
 }

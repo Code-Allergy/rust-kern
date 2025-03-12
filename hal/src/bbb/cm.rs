@@ -184,14 +184,14 @@ pub fn init_per_pll() {
 
 pub fn init_ddr_pll() {
     unsafe {
+        let mut reg_val: u32;
         // set bypass mode
-        let mut reg_val = reg32_read_masked(
+        reg32_write_masked(
             CM_WKUP_BASE,
             CM_WKUP_CM_CLKMODE_DPLL_DDR,
-            !CM_WKUP_CM_CLKMODE_DPLL_DDR_DPLL_EN,
+            CM_WKUP_CM_CLKMODE_DPLL_DDR_DPLL_EN,
+            CM_WKUP_CM_CLKMODE_DPLL_DDR_DPLL_EN_DPLL_MN_BYP_MODE,
         );
-        reg_val |= CM_WKUP_CM_CLKMODE_DPLL_DDR_DPLL_EN_DPLL_MN_BYP_MODE;
-        reg32_write(CM_WKUP_BASE, CM_WKUP_CM_CLKMODE_DPLL_DDR, reg_val);
 
         while reg32_read_masked(
             CM_WKUP_BASE,
@@ -358,11 +358,11 @@ pub fn init_power_domain_transition() {
 }
 
 pub fn init_plls() {
-    let opp_config = get_opp_config();
-    init_mpu_pll(opp_config.mpupll_m);
+    // let opp_config = get_opp_config();
+    // init_mpu_pll(opp_config.mpupll_m);
     init_core_pll();
-    init_per_pll();
+    // init_per_pll();
     init_ddr_pll();
     init_interface_clk();
-    init_power_domain_transition();
+    // init_power_domain_transition();
 }

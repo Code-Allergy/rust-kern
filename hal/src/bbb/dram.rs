@@ -178,11 +178,10 @@ pub fn init_ddr_final() {
         );
 
         /* IO to work for DDR3 */
-        let reg = reg32_read(CONTROL_MODULE_BASE, CONTROL_DDR_IO_CTRL);
-        reg32_write(
+        reg32_clear_bits(
             CONTROL_MODULE_BASE,
             CONTROL_DDR_IO_CTRL,
-            reg & DDR3_CONTROL_DDR_IO_CTRL,
+            !DDR3_CONTROL_DDR_IO_CTRL,
         );
 
         reg32_write_masked(

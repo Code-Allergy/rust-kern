@@ -4,16 +4,16 @@ const BOOT_ASM: &str = "src/boot.S";
 const LD_SCRIPT_DIR: &str = "ld_scripts";
 
 enum Platform {
-    BBB,
-    QEMU,
+    Bbb,
+    Qemu,
 }
 
 impl Platform {
     fn from_env() -> Self {
         if env::var("CARGO_FEATURE_BBB").is_ok() {
-            Platform::BBB
+            Platform::Bbb
         } else if env::var("CARGO_FEATURE_QEMU").is_ok() {
-            Platform::QEMU
+            Platform::Qemu
         } else {
             panic!("Either the 'bbb' or 'qemu' feature must be enabled.");
         }
@@ -21,8 +21,8 @@ impl Platform {
 
     fn get_ld_script(&self) -> String {
         match self {
-            Platform::BBB => format!("{}/linker_bbb.ld", LD_SCRIPT_DIR),
-            Platform::QEMU => format!("{}/linker_qemu.ld", LD_SCRIPT_DIR),
+            Platform::Bbb => format!("{}/linker_bbb.ld", LD_SCRIPT_DIR),
+            Platform::Qemu => format!("{}/linker_qemu.ld", LD_SCRIPT_DIR),
         }
     }
 
@@ -42,11 +42,11 @@ impl Platform {
 
     fn set_features(&self) {
         match self {
-            Platform::BBB => {
+            Platform::Bbb => {
                 println!("cargo:rustc-cfg=feature=\"bbb\"");
                 println!("Building for BeagleBone Black...");
             }
-            Platform::QEMU => {
+            Platform::Qemu => {
                 println!("cargo:rustc-cfg=feature=\"qemu\"");
                 println!("Building for QEMU...");
             }

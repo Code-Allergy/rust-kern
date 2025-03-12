@@ -9,50 +9,23 @@
 
 mod panic;
 
-use core::ffi::c_uchar;
 pub use core::ffi::c_void;
-use fat32::{Fat32Error, Fat32FileSystem};
-use hal::{
-    ccm, dbg,
-    dram::{self, DRAM_START},
-    i2c, mmc, mmu, println,
-    uart::{self, read_byte},
-};
+use hal::{ccm, dram, i2c, mmu, println, uart};
 
-// // Implementing rmodem compatible Read trait
-// impl rmodem::Read for UartDevice {
-//     fn read(&mut self, buf: &mut [u8]) -> Result<usize, rmodem::Error> {
-//         let mut count = 0;
-//         for byte in buf.iter_mut() {
-//             match platform::read_byte() {
-//                 Some(b) => {
-//                     *byte = b;
-//                     count += 1;
-//                 }
-//                 None => break, // No more bytes available
-//             }
-//         }
-//         Ok(count)
-//     }
-// }
+#[cfg(feature = "boot_mmc")]
+mod boot_mmc_imports {
+    pub use core::ffi::c_uchar;
+    pub use fat32::{Fat32Error, Fat32FileSystem};
+    pub use hal::dram::DRAM_START;
+    pub use hal::mmc;
+}
 
-// // Implementing rmodem compatible Write trait
-// impl rmodem::Write for UartDevice {
-//     fn write(&mut self, buf: &[u8]) -> Result<usize, rmodem::Error> {
-//         for &byte in buf {
-//             platform::write_byte(byte);
-//         }
-//         Ok(buf.len())
-//     }
-
-//     fn flush(&mut self) -> Result<(), rmodem::Error> {
-//         // Assuming the UART doesn't need explicit flushing
-//         Ok(())
-//     }
-// }
+#[cfg(feature = "boot_mmc")]
+use boot_mmc_imports::*;
 
 use bootloader_types::BootInfoHeader;
 
+#[cfg(feature = "boot_mmc")]
 unsafe extern "C" fn read_sector(sector: u32, buffer: *mut u8) -> i32 {
     if buffer.is_null() {
         return -1;
@@ -63,6 +36,7 @@ unsafe extern "C" fn read_sector(sector: u32, buffer: *mut u8) -> i32 {
     0
 }
 
+#[cfg(feature = "boot_mmc")]
 fn copy_kernel_to_phys() -> Result<(), Fat32Error> {
     let mut fs = Fat32FileSystem::from_read_fn(read_sector)?;
     let file = fs
@@ -109,8 +83,7 @@ pub fn get_boot_entry() -> usize {
     unsafe extern "C" {
         static _init: u8;
     }
-    let init_addr = unsafe { &_init as *const u8 as usize };
-    init_addr
+    unsafe { &_init as *const u8 as usize }
 }
 
 #[cfg(feature = "boot_mmc")]
@@ -149,6 +122,7 @@ pub extern "C" fn rust_main() -> ! {
     boot_uart();
 
     #[cfg(not(feature = "boot_uart"))]
+    #[cfg(not(feature = "boot_mmc"))]
     unreachable!("End of bootloader main without jumping!");
 }
 

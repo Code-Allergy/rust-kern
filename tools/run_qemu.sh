@@ -18,7 +18,7 @@ fi
 
 
 RUN_ARG_BIN=$(basename $1)
-echo "Building for: $RUN_ARG_BIN"
+echo "Launching: $RUN_ARG_BIN"
 
 if [ "$RUN_ARG_BIN" = "bootloader" ]; then
     BOOTELF_FILE=$1
@@ -26,7 +26,12 @@ if [ "$RUN_ARG_BIN" = "bootloader" ]; then
 else
     BOOTELF_FILE=$DEFAULT_ELFBIN_PATH
     SDCARD_IMG=$DEFAULT_SDCARD_PATH
-    make $SDCARD_IMG PLATFORM=qemu
+
+    # check if MAKE is set, if it is not, build the image
+    if [ -z "${MAKE:-}" ]; then
+        echo "Building image"
+        make $SDCARD_IMG PLATFORM=qemu
+    fi
 fi
 
 
