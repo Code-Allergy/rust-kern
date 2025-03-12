@@ -83,7 +83,7 @@ fn main() {
     platform.set_kernel_entry_addr();
 
     // set linking flags
-    println!("cargo:rustc-link-arg=-nostartfiles");
+    // println!("cargo:rustc-link-arg=-nostartfiles");
     println!("cargo:rustc-link-arg=-nostdlib");
 
     create_asm_entry_1();

@@ -75,7 +75,8 @@ $(BOOTLOADER_BIN): $(BOOTLOADER_ELF) | $(OUTPUT_DIR)
 	@arm-none-eabi-objcopy -O binary $< $@
 
 $(BOOTLOADER_ELF): $(BOOTLOADER_SRC_FILES)
-	CARGO_TARGET_DIR=$(BUILD_DIR) cargo build $(CARGO_FLAGS) -p bootloader
+	CARGO_TARGET_DIR=$(BUILD_DIR) cargo build $(CARGO_FLAGS) -p bootloader \
+	    --features "boot_mmc"
 
 #
 # KERNEL
@@ -98,7 +99,7 @@ qemu:
 	@$(MAKE) _qemu PLATFORM=qemu
 
 _qemu: $(OUT_SDCARD) $(BOOTLOADER_BIN)
-	@qemu-img resize $(OUT_SDCARD) 128M
+	qemu-img resize -f raw $(OUT_SDCARD) 128M
 	qemu-system-arm -m 512M -M cubieboard \
 	-cpu cortex-a8 \
 	-serial mon:stdio -nographic \

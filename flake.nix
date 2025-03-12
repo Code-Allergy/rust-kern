@@ -1,45 +1,81 @@
 {
-  description = "Rust cross-compilation environment for ARMv7a (bare-metal)";
+  description = "Flake for my osdev project";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     rust-overlay.url = "github:oxalica/rust-overlay";
   };
 
-  outputs = { self, nixpkgs, rust-overlay }:
-  let
+  outputs = {
+    self,
+    nixpkgs,
+    rust-overlay,
+  }: let
     system = "x86_64-linux";
-    overlays = [ (import rust-overlay) ];
-    pkgs = import nixpkgs { inherit system overlays; };
-    rust = pkgs.rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override {
-      extensions = [ "rust-src" "rustfmt" "clippy" ]; # Adds rust-src for cross-compilation
-      targets = [ "armv7a-none-eabi" ]; # Pre-installs the Rust target
-    });
-  in {
-    packages.${system}.default = self; # use self
-    devShells.${system}.default = pkgs.mkShell {
-      buildInputs = [
-        rust
-        pkgs.pkg-config
-        pkgs.openssl
-        pkgs.gcc-arm-embedded  # ARM bare-metal GCC toolchain
-        pkgs.rustup            # Rustup to install the correct target
-        pkgs.parted
-        pkgs.qemu
-        pkgs.llvmPackages.libclang # rustbindgen
-        pkgs.minicom
-        # Fat32 filesystem tools
-        pkgs.mtools
-        pkgs.fatcat
-      ];
+    pkgs = import nixpkgs {
+      inherit system;
+      overlays = [(import rust-overlay)];
+    };
 
-      shellHook = ''
-        rustup target add armv7a-none-eabi
-        export CARGO_TARGET_ARMV7A_NONE_EABI_LINKER=arm-none-eabi-gcc
-        export RUSTFLAGS="-C linker=arm-none-eabi-gcc"
-        export LIBCLANG_PATH="${pkgs.llvmPackages.libclang.lib}/lib"
-        echo "Rust nightly with ARMv7a-none-eabi cross-compilation setup."
-      '';
+    commonEnv = {
+      RUSTFLAGS = "--build-id=none";
+      LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
+    };
+
+    baseInputs = [
+      (pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml)
+      pkgs.gcc-arm-embedded
+      pkgs.llvmPackages.libclang
+    ];
+  in {
+    packages.${system} = {
+    default = self.packages.${system}.qemu-run;
+    qemu-run = pkgs.writeShellScriptBin "run-qemu" ''...'';
+    };
+
+    devShells.${system} = {
+      minimal = pkgs.mkShell {
+        buildInputs = baseInputs;
+        inherit (commonEnv) RUSTFLAGS LIBCLANG_PATH;
+      };
+      dev = pkgs.mkShell {
+        buildInputs =
+          baseInputs
+          ++ [
+            pkgs.qemu
+            pkgs.minicom
+            pkgs.mtools
+            pkgs.parted
+            pkgs.fatcat
+          ];
+        inherit (commonEnv) RUSTFLAGS LIBCLANG_PATH;
+      };
+      debug = pkgs.mkShell {
+        buildInputs =
+          baseInputs
+          ++ [
+            pkgs.gdb
+          ];
+        inherit (commonEnv) RUSTFLAGS LIBCLANG_PATH;
+      };
+      full = pkgs.mkShell {
+        inputsFrom = [
+          self.devShells.${system}.minimal
+          self.devShells.${system}.dev
+          self.devShells.${system}.debug
+        ];
+      };
+      default = self.devShells.${system}.full;
+    };
+
+    checks.${system} = {
+      fmt =
+        pkgs.runCommand "check-fmt" {
+          buildInputs = [pkgs.rustfmt];
+        } ''
+          cargo fmt -- --check
+          touch $out
+        '';
     };
   };
 }

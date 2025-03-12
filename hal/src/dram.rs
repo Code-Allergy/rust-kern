@@ -5,20 +5,19 @@ pub use platform::{DRAM_END, DRAM_START};
 /// Initialize the DRAM, then run a quick test
 pub fn init() {
     platform::init();
-    simple_memtest();
 }
 
-fn simple_memtest() {
+fn _simple_memtest() {
     #[cfg(feature = "bbb")]
     simple_memtest_from(DRAM_START, DRAM_END);
 
     // On qemu, the bootloader is loaded immediately
     // into dram, we do this so we dont overwrite it
     #[cfg(feature = "qemu")]
-    simple_memtest_from(DRAM_START + 0x20000, DRAM_END);
+    _simple_memtest_from(DRAM_START + 0x20000, DRAM_END);
 }
 
-fn simple_memtest_from(start: usize, end: usize) {
+fn _simple_memtest_from(start: usize, end: usize) {
     let mut errors = 0;
     let size = end - start;
     unsafe {

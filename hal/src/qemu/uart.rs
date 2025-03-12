@@ -1,5 +1,5 @@
 use super::regs::{base::UART0_BASE, uart::*};
-use crate::util::reg32_write;
+use crate::util::{reg32_read, reg32_write};
 
 pub fn init() {
     unsafe {
@@ -16,6 +16,17 @@ pub fn init() {
 pub fn write_byte(byte: u8) {
     unsafe {
         reg32_write(UART0_BASE, RBR_THR_DLL, byte as u32);
+    }
+}
+
+pub fn read_byte() -> Option<u8> {
+    unsafe {
+        let lsr = reg32_read(UART0_BASE, LSR);
+        if lsr & 0x1 != 0 {
+            Some(reg32_read(UART0_BASE, RBR_THR_DLL) as u8)
+        } else {
+            None
+        }
     }
 }
 

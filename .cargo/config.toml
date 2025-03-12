@@ -1,17 +1,6 @@
-[alias]
-flash = "./tools/flash_bbb.sh"
-
 [build]
 target = "armv7a-none-eabi"
 
 [target.armv7a-none-eabi]
 linker = "arm-none-eabi-gcc"
-runner = "sh ./tools/run_qemu.sh"
-rustflags = [
-    "-C",
-    "target-feature=+v7,+thumb2",
-    "-C",
-    "link-arg=-nostartfiles",
-    # "-C",
-    # "link-arg=-nostdlib",
-]
+runner = "tools/run_qemu.sh"

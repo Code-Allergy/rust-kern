@@ -1,0 +1,5 @@
+[toolchain]
+channel = "nightly"
+components = ["rust-src", "rustfmt", "clippy", "llvm-tools"]
+targets = ["armv7a-none-eabi"]
+profile = "minimal"

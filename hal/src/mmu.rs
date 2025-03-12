@@ -4,6 +4,8 @@ use core::cell::UnsafeCell;
 use core::fmt;
 use core::mem::size_of;
 
+use crate::{dram, mmu};
+
 const VIRT_MEM_START: u32 = 0x8000_0000;
 const VIRT_DRAM_START: u32 = 0x8000_0000;
 const VIRT_DRAM_END: u32 = 0x9FFF_FFFF;
@@ -153,7 +155,8 @@ pub fn clear_boot_tables() {
     }
 }
 
-pub fn init() {
+// for now, just map everything and 1MB of kernel space
+pub fn init(kernel_base: u32) {
     clear_boot_tables();
     set_domains();
 
@@ -162,6 +165,10 @@ pub fn init() {
     for (i, entry) in tables.iter_mut().enumerate() {
         entry.map_section(i as u32 * 0x100000, L1_ACCESS_RW_RW);
     }
+
+    // for now, map the first 1MB of kernel space to dram
+    let first_page = mmu::get_boot_entry_at_virt(kernel_base as u32);
+    first_page.map_section(dram::DRAM_START as u32, mmu::L1_KERNEL_CODE_FLAGS);
 }
 
 pub fn enable() {

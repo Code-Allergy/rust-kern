@@ -1,3 +1,51 @@
+cargo-features = ["profile-rustflags"]
 [workspace]
 members = ["bootloader", "hal", "kernel", "libs/fat32"]
 resolver = "3"
+default-members = ["bootloader", "kernel"]
+exclude = ["target/", "tools/"]
+
+
+# ======================
+# Profile Configurations
+# ======================
+[profile.dev]
+opt-level = 1           # Basic optimizations for faster debug cycles
+debug = true            # Include debug symbols (controlled via RUSTFLAGS)
+debug-assertions = true
+overflow-checks = true
+panic = "abort"         # Critical for embedded targets
+incremental = true      # Faster builds during development
+codegen-units = 16      # Parallel compilation for development speed
+
+[profile.release]
+rustflags = ["-C", "link-arg=-fno-exceptions"]
+opt-level = 'z'
+lto = true
+codegen-units = 1
+panic = 'abort'
+strip = true
+debug = 1                                      # Minimal debug info
+overflow-checks = false
+# Embedded-specific optimizations
+codegen-units-all = 1
+
+[profile.optimized]
+rustflags = ["-C", "link-arg=-fno-exceptions"]
+inherits = "release"
+opt-level = 3
+lto = "thin"
+incremental = true
+codegen-units = 4
+
+[profile.test]
+inherits = "dev"
+panic = "abort"
+
+# ======================
+# Workspace Lints
+# ======================
+[workspace.lints.rust]
+
+unsafe_code = "warn"
+missing_docs = "warn"

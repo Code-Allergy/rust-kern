@@ -1,22 +1,55 @@
 #![no_std]
 #![no_main]
+#![feature(alloc_error_handler)]
 #![cfg_attr(test, feature(custom_test_frameworks))]
 #![cfg_attr(test, test_runner(crate::test_runner))]
 #![cfg_attr(test, reexport_test_harness_main = "test_main")]
+
+// use alloc::vec;
 
 mod panic;
 
 use core::ffi::c_uchar;
 pub use core::ffi::c_void;
-use fat32::{
-    Fat32DiskIO, Fat32Error, Fat32FileSystem,
-    raw::{fat32_diskio_t, fat32_file_t, fat32_fs_t, fat32_mount, fat32_open, fat32_read},
-};
+use fat32::{Fat32Error, Fat32FileSystem};
 use hal::{
     ccm, dbg,
     dram::{self, DRAM_START},
-    i2c, mmc, mmu, println, uart,
+    i2c, mmc, mmu, println,
+    uart::{self, read_byte},
 };
+
+// // Implementing rmodem compatible Read trait
+// impl rmodem::Read for UartDevice {
+//     fn read(&mut self, buf: &mut [u8]) -> Result<usize, rmodem::Error> {
+//         let mut count = 0;
+//         for byte in buf.iter_mut() {
+//             match platform::read_byte() {
+//                 Some(b) => {
+//                     *byte = b;
+//                     count += 1;
+//                 }
+//                 None => break, // No more bytes available
+//             }
+//         }
+//         Ok(count)
+//     }
+// }
+
+// // Implementing rmodem compatible Write trait
+// impl rmodem::Write for UartDevice {
+//     fn write(&mut self, buf: &[u8]) -> Result<usize, rmodem::Error> {
+//         for &byte in buf {
+//             platform::write_byte(byte);
+//         }
+//         Ok(buf.len())
+//     }
+
+//     fn flush(&mut self) -> Result<(), rmodem::Error> {
+//         // Assuming the UART doesn't need explicit flushing
+//         Ok(())
+//     }
+// }
 
 use bootloader_types::BootInfoHeader;
 
@@ -67,17 +100,31 @@ pub fn load_kernel() -> ! {
     }
 }
 
-fn get_kernel_entry() -> usize {
+pub fn get_kernel_entry() -> usize {
     let s = env!("KERNEL_ENTRY");
     usize::from_str_radix(s.trim_start_matches("0x"), 16).unwrap()
 }
 
-fn get_boot_entry() -> usize {
+pub fn get_boot_entry() -> usize {
     unsafe extern "C" {
         static _init: u8;
     }
     let init_addr = unsafe { &_init as *const u8 as usize };
     init_addr
+}
+
+#[cfg(feature = "boot_mmc")]
+fn boot_mmc() -> ! {
+    mmc::init().expect("Failed to initialize MMC");
+    println!("Initialized MMC controller");
+    copy_kernel_to_phys().expect("Failed to copy kernel to memory");
+    println!("Copied kernel, jumping to kernel");
+    load_kernel();
+}
+
+#[cfg(feature = "boot_uart")]
+fn boot_uart() -> ! {
+    todo!("do this shit");
 }
 
 #[unsafe(no_mangle)]
@@ -86,17 +133,8 @@ pub extern "C" fn rust_main() -> ! {
     i2c::init();
     ccm::init();
     dram::init();
-    mmu::init();
-
-    // for now, map the first 1MB of kernel space to dram
-    let first_page = mmu::get_boot_entry_at_virt(get_kernel_entry() as u32);
-    first_page.map_section(dram::DRAM_START as u32, mmu::L1_KERNEL_CODE_FLAGS);
-
-    #[cfg(feature = "bbb")]
-    todo!("End of rust_main for BBB, need mmc reads");
-
-    #[allow(unreachable_code)] // BBB
-    mmc::init().expect("Failed to initialize MMC");
+    mmu::init(get_kernel_entry() as u32);
+    mmu::enable();
 
     println!("Finished initializing hardware, enabling MMU");
     println!(
@@ -104,9 +142,14 @@ pub extern "C" fn rust_main() -> ! {
         get_boot_entry()
     );
 
-    mmu::enable();
-    copy_kernel_to_phys().expect("Failed to copy kernel to memory");
-    load_kernel();
+    #[cfg(feature = "boot_mmc")]
+    boot_mmc();
+
+    #[cfg(feature = "boot_uart")]
+    boot_uart();
+
+    #[cfg(not(feature = "boot_uart"))]
+    unreachable!("End of bootloader main without jumping!");
 }
 
 // TODO testing
